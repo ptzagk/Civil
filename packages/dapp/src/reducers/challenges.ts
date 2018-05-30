@@ -24,7 +24,10 @@ export function challengesFetching(state: Map<string, any> = Map<string, any>(),
   }
 }
 
-export function challengesVotedOnByUser(state: Map<string, Set<string>> = Map<string, Set<string>>(), action: AnyAction): Map<string, Set<string>> {
+export function challengesVotedOnByUser(
+  state: Map<string, Set<string>> = Map<string, Set<string>>(),
+  action: AnyAction,
+): Map<string, Set<string>> {
   switch (action.type) {
     case challengeActions.ADD_OR_UPDATE_USER_CHALLENGE_DATA:
       if (action.data.userChallengeData.didUserCommit) {
