@@ -75,7 +75,7 @@ const mapStateToProps = (
   }
   let userAcct = ownProps.user;
   if (!userAcct) {
-    userAcct = user.account;
+    userAcct = user.account.account;
   }
   if (challengeID && userAcct) {
     const challengeUserDataMap = challengeUserData.get(challengeID!);
