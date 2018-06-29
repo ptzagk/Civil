@@ -18,20 +18,38 @@ import {
   TimestampedEvent,
 } from "@joincivil/core";
 import { listingActions } from "../actionCreators/listings";
+import BigNumber from "bignumber.js";
 
-export interface ListingWrapperWithExpiry {
+export interface ExtendedListingWrapper {
   listing: ListingWrapper;
   expiry: number;
+  whitelistedTimestamp?: number;
+  removedTimestamp?: number;
+  challengeSucceededChallengeID?: BigNumber;
 }
 
 export function listings(
-  state: Map<string, ListingWrapperWithExpiry> = Map<string, ListingWrapperWithExpiry>(),
+  state: Map<string, ExtendedListingWrapper> = Map<string, ExtendedListingWrapper>(),
   action: AnyAction,
-): Map<string, ListingWrapperWithExpiry> {
+): Map<string, ExtendedListingWrapper> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      const getNextExpiry = getNextTimerExpiry(action.data.data);
-      return state.set(action.data.address, { listing: action.data, expiry: getNextExpiry });
+      const getNextExpiry = getNextTimerExpiry(action.data.listing.data);
+      const listingData = state.get(action.data.listing.address) || {};
+      if (action.data.listing) {
+        listingData.listing = action.data.listing;
+        listingData.expiry = getNextExpiry;
+      }
+      if (action.data.whitelistedTimestamp) {
+        listingData.whitelistedTimestamp = action.data.whitelistedTimestamp;
+      }
+      if (action.data.removedTimestamp) {
+        listingData.removedTimestamp = action.data.removedTimestamp;
+      }
+      if (action.data.challengeSucceededChallengeID) {
+        listingData.challengeSucceededChallengeID = action.data.challengeSucceededChallengeID;
+      }
+      return state.set(action.data.listing.address, listingData);
     default:
       return state;
   }
@@ -70,10 +88,10 @@ export function histories(
 export function applications(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (isInApplicationPhase(action.data.data)) {
-        return state.add(action.data.address);
+      if (isInApplicationPhase(action.data.listing.data)) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;
@@ -83,10 +101,10 @@ export function applications(state: Set<string> = Set<string>(), action: AnyActi
 export function whitelistedListings(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (isWhitelisted(action.data.data)) {
-        return state.add(action.data.address);
+      if (isWhitelisted(action.data.listing.data)) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;
@@ -96,10 +114,10 @@ export function whitelistedListings(state: Set<string> = Set<string>(), action: 
 export function readyToWhitelistListings(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (canBeWhitelisted(action.data.data)) {
-        return state.add(action.data.address);
+      if (canBeWhitelisted(action.data.listing.data)) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;
@@ -109,10 +127,10 @@ export function readyToWhitelistListings(state: Set<string> = Set<string>(), act
 export function inChallengeCommitListings(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (isInChallengedCommitVotePhase(action.data.data)) {
-        return state.add(action.data.address);
+      if (isInChallengedCommitVotePhase(action.data.listing.data)) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;
@@ -122,10 +140,10 @@ export function inChallengeCommitListings(state: Set<string> = Set<string>(), ac
 export function inChallengeRevealListings(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (isInChallengedRevealVotePhase(action.data.data)) {
-        return state.add(action.data.address);
+      if (isInChallengedRevealVotePhase(action.data.listing.data)) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;
@@ -135,10 +153,10 @@ export function inChallengeRevealListings(state: Set<string> = Set<string>(), ac
 export function awaitingAppealRequestListings(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (isAwaitingAppealRequest(action.data.data)) {
-        return state.add(action.data.address);
+      if (isAwaitingAppealRequest(action.data.listing.data)) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;
@@ -148,10 +166,10 @@ export function awaitingAppealRequestListings(state: Set<string> = Set<string>()
 export function awaitingAppealJudgmentListings(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (isAwaitingAppealJudgment(action.data.data)) {
-        return state.add(action.data.address);
+      if (isAwaitingAppealJudgment(action.data.listing.data)) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;
@@ -161,10 +179,10 @@ export function awaitingAppealJudgmentListings(state: Set<string> = Set<string>(
 export function awaitingAppealChallengeListings(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (isListingAwaitingAppealChallenge(action.data.data)) {
-        return state.add(action.data.address);
+      if (isListingAwaitingAppealChallenge(action.data.listing.data)) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;
@@ -174,10 +192,10 @@ export function awaitingAppealChallengeListings(state: Set<string> = Set<string>
 export function appealChallengeCommitPhaseListings(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (isInAppealChallengeCommitPhase(action.data.data)) {
-        return state.add(action.data.address);
+      if (isInAppealChallengeCommitPhase(action.data.listing.data)) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;
@@ -187,10 +205,10 @@ export function appealChallengeCommitPhaseListings(state: Set<string> = Set<stri
 export function appealChallengeRevealPhaseListings(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (isInAppealChallengeRevealPhase(action.data.data)) {
-        return state.add(action.data.address);
+      if (isInAppealChallengeRevealPhase(action.data.listing.data)) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;
@@ -200,10 +218,10 @@ export function appealChallengeRevealPhaseListings(state: Set<string> = Set<stri
 export function resolveChallengeListings(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (canChallengeBeResolved(action.data.data)) {
-        return state.add(action.data.address);
+      if (canChallengeBeResolved(action.data.listing.data)) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;
@@ -213,10 +231,10 @@ export function resolveChallengeListings(state: Set<string> = Set<string>(), act
 export function resolveAppealListings(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (canListingAppealBeResolved(action.data.data)) {
-        return state.add(action.data.address);
+      if (canListingAppealBeResolved(action.data.listing.data)) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;
@@ -226,10 +244,10 @@ export function resolveAppealListings(state: Set<string> = Set<string>(), action
 export function rejectedListings(state: Set<string> = Set<string>(), action: AnyAction): Set<string> {
   switch (action.type) {
     case listingActions.ADD_OR_UPDATE_LISTING:
-      if (action.data.data.appExpiry.isZero()) {
-        return state.add(action.data.address);
+      if (action.data.listing.data.appExpiry.isZero()) {
+        return state.add(action.data.listing.address);
       } else {
-        return state.remove(action.data.address);
+        return state.remove(action.data.listing.address);
       }
     default:
       return state;

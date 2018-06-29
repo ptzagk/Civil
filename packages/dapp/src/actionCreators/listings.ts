@@ -4,6 +4,7 @@ import { ListingWrapper, TimestampedEvent } from "@joincivil/core";
 import { getTCR } from "../helpers/civilInstance";
 import { getNewsroom } from "../helpers/listingEvents";
 import { addChallenge } from "./challenges";
+import BigNumber from "bignumber.js";
 
 export enum listingActions {
   ADD_OR_UPDATE_LISTING = "ADD_OR_UPDATE_LISTING",
@@ -13,7 +14,7 @@ export enum listingActions {
   FETCH_LISTING_DATA_IN_PROGRESS = "FETCH_LISTING_DATA_IN_PROGRESS",
 }
 
-export const addListing = (listing: ListingWrapper): any => {
+export const addListing = (listing: ListingWrapper, whitelistedTimestamp?: number, removedTimestamp?: number, challengeSucceededChallengeID?: BigNumber): any => {
   return async (dispatch: Dispatch<any>, getState: any): Promise<AnyAction> => {
     if (!listing.data.challengeID.isZero()) {
       const wrappedChallenge = {
@@ -23,14 +24,24 @@ export const addListing = (listing: ListingWrapper): any => {
       };
       dispatch(addChallenge(wrappedChallenge));
     }
-    return dispatch(addListingBasic(listing));
+    return dispatch(addListingBasic(listing, whitelistedTimestamp, removedTimestamp, challengeSucceededChallengeID));
   };
 };
 
-const addListingBasic = (listing: ListingWrapper): AnyAction => {
+const addListingBasic = (
+  listing: ListingWrapper,
+  whitelistedTimestamp?: number,
+  removedTimestamp?: number,
+  challengeSucceededChallengeID?: BigNumber,
+): AnyAction => {
   return {
     type: listingActions.ADD_OR_UPDATE_LISTING,
-    data: listing,
+    data: {
+      listing,
+      whitelistedTimestamp,
+      removedTimestamp,
+      challengeSucceededChallengeID,
+    },
   };
 };
 
@@ -79,12 +90,14 @@ export const fetchAndAddListingData = (listingID: string): any => {
     const { listingsFetching } = getState().networkDependent;
     const challengeRequest = listingsFetching.get(listingID);
 
-    // Never fetched this before, so let's fetch it
-    if (challengeRequest === undefined) {
+    // Never fetched this before or we need to update and request isn't in
+    // progress, so let's fetch it
+    if (challengeRequest === undefined || !challengeRequest.isFetching) {
       dispatch(fetchListing(listingID));
 
       const tcr = getTCR();
-      const wrappedListing = await tcr.getListing(listingID).getListingWrapper();
+      const listing = tcr.getListing(listingID);
+      const wrappedListing = await listing.getListingWrapper();
       await getNewsroom(dispatch, listingID);
       dispatch(addListing(wrappedListing));
 
@@ -101,3 +114,64 @@ export const fetchAndAddListingData = (listingID: string): any => {
     }
   };
 };
+
+export const fetchListingWhitelistedTimestamp = (listingID: string): any => {
+  return async (dispatch: Dispatch<any>, getState: any): Promise<AnyAction> => {
+    const { listingsFetching } = getState().networkDependent;
+    const challengeRequest = listingsFetching.get(listingID);
+
+    // Never fetched this before or we need to update and request isn't in
+    // progress, so let's fetch it
+    if (challengeRequest === undefined || !challengeRequest.isFetching) {
+      dispatch(fetchListing(listingID));
+
+      const tcr = getTCR();
+      const listing = tcr.getListing(listingID);
+      const wrappedListing = await listing.getListingWrapper();
+      const listingWhitelistedTimestamp = await listing.getWhitelistedTimestamp();
+      dispatch(addListing(wrappedListing, listingWhitelistedTimestamp));
+
+      return dispatch(fetchListingComplete(listingID));
+
+      // We think it's still fetching, so fire an action in case we want to capture this
+      // state for a progress indicator
+    } else if (challengeRequest.isFetching) {
+      return dispatch(fetchListingInProgress(listingID));
+
+      // This was an additional request for a challenge that was already fetched
+    } else {
+      return dispatch(fetchListingComplete(listingID));
+    }
+  };
+}
+
+export const fetchListingRemovedTimestamp = (listingID: string): any => {
+  return async (dispatch: Dispatch<any>, getState: any): Promise<AnyAction> => {
+    const { listingsFetching } = getState().networkDependent;
+    const challengeRequest = listingsFetching.get(listingID);
+
+    // Never fetched this before or we need to update and request isn't in
+    // progress, so let's fetch it
+    if (challengeRequest === undefined || !challengeRequest.isFetching) {
+      dispatch(fetchListing(listingID));
+
+      const tcr = getTCR();
+      const listing = tcr.getListing(listingID);
+      const wrappedListing = await listing.getListingWrapper();
+      const listingRemovedTimestamp = await listing.getListingRemovedTimestamp();
+      const challengeSucceededChallengeID = await listing.getChallengeSucceededChallengeID()
+      dispatch(addListing(wrappedListing, undefined, listingRemovedTimestamp, challengeSucceededChallengeID));
+
+      return dispatch(fetchListingComplete(listingID));
+
+      // We think it's still fetching, so fire an action in case we want to capture this
+      // state for a progress indicator
+    } else if (challengeRequest.isFetching) {
+      return dispatch(fetchListingInProgress(listingID));
+
+      // This was an additional request for a challenge that was already fetched
+    } else {
+      return dispatch(fetchListingComplete(listingID));
+    }
+  };
+}

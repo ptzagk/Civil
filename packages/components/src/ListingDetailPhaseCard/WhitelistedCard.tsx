@@ -10,14 +10,25 @@ import {
 } from "./styledComponents";
 import { buttonSizes } from "../Button";
 import { TransactionInvertedButton } from "../TransactionButton";
+import { getLocalDateTimeStrings } from "@joincivil/utils";
 
-export class WhitelistedCard extends React.Component<ListingDetailPhaseCardComponentProps> {
+export interface WhitelistedCardProps {
+  whitelistedTimestamp: number;
+}
+
+export class WhitelistedCard extends React.Component<ListingDetailPhaseCardComponentProps & WhitelistedCardProps> {
   public render(): JSX.Element {
+    let displayDateTime;
+
+    if (this.props.whitelistedTimestamp) {
+      const whitelistedDateTime = getLocalDateTimeStrings(this.props.whitelistedTimestamp);
+      displayDateTime = `${whitelistedDateTime[0]} ${whitelistedDateTime[1]}`;
+    }
     return (
       <StyledListingDetailPhaseCardContainer>
         <StyledListingDetailPhaseCardSection>
           <StyledPhaseDisplayName>Approved Newsroom</StyledPhaseDisplayName>
-          <MetaItemValue>May 5, 2018, 8:30 GMT-0400</MetaItemValue>
+          <MetaItemValue>{displayDateTime}</MetaItemValue>
           <MetaItemLabel>Approved date</MetaItemLabel>
         </StyledListingDetailPhaseCardSection>
         <StyledListingDetailPhaseCardSection>

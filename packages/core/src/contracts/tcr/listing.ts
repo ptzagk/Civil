@@ -5,6 +5,7 @@ import { EthApi } from "../../utils/ethapi";
 import { EthAddress, ListingWrapper, ListingData, TimestampedEvent } from "../../types";
 import { createTimestampedEvent } from "../../utils/events";
 import { Challenge } from "./challenge";
+import BigNumber from "bignumber.js";
 
 export class Listing {
   private ethApi: EthApi;
@@ -42,6 +43,41 @@ export class Listing {
       challengeID,
       challenge,
     };
+  }
+
+  public async getWhitelistedTimestamp(): Promise<number | undefined> {
+    const whitelistedEvent = await this.whitelisteds()
+      .first()
+      .toPromise();
+    const timestamp = await whitelistedEvent.timestamp();
+    return timestamp;
+  }
+
+  public async getListingRemovedEvent(): Promise<TimestampedEvent<CivilTCR.LogEvents._ListingRemoved> | undefined> {
+    const removedEvent = await this.listingRemoveds()
+      .first()
+      .toPromise();
+    return removedEvent;
+  }
+
+  public async getListingRemovedTimestamp(): Promise<number | undefined> {
+    const listingRemovedWrappedEvent = await this.getListingRemovedEvent();
+    if (listingRemovedWrappedEvent) {
+      const timestamp = await listingRemovedWrappedEvent.timestamp();
+      return timestamp;
+    }
+    return;
+  }
+
+  public async getChallengeSucceededChallengeID(): Promise<BigNumber | undefined> {
+    const challengedSuccededWrappedEvent = await this.successfulChallenges()
+      .first()
+      .toPromise();
+    if (challengedSuccededWrappedEvent) {
+      const args: CivilTCR.Args._ChallengeSucceeded = challengedSuccededWrappedEvent.args;
+      return args.challengeID;
+    }
+    return;
   }
 
   //#region EventStreams

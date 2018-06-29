@@ -16,7 +16,7 @@ import {
   resolveChallengeListings,
   resolveAppealListings,
   rejectedListings,
-  ListingWrapperWithExpiry,
+  ExtendedListingWrapper,
 } from "./listings";
 import {
   parameters,
@@ -55,7 +55,7 @@ export interface NetworkDependentState {
   newsroomUi: Map<string, any>;
   newsroomUsers: Map<EthAddress, string>;
   currentUserNewsrooms: Set<string>;
-  listings: Map<string, ListingWrapperWithExpiry>;
+  listings: Map<string, ExtendedListingWrapper>;
   listingsFetching: Map<string, any>;
   histories: Map<string, List<TimestampedEvent<any>>>;
   applications: Set<string>;

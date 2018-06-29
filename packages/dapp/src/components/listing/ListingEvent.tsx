@@ -26,6 +26,7 @@ class ListingEvent extends React.Component<ListingEventProps> {
       | CivilTCR.LogEvents._ApplicationWhitelisted
       | CivilTCR.LogEvents._Challenge;
     let argsData: JSX.Element | null = null;
+    console.log(wrappedEvent);
     switch (wrappedEvent.event) {
       case CivilTCR.Events._Application:
         argsData = this.renderApplicationEvent(wrappedEvent.args);

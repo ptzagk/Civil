@@ -26,6 +26,8 @@ import {
 export interface ListingPhaseActionsProps {
   listing: ListingWrapper;
   expiry?: number;
+  whitelistedTimestamp?: number;
+  removedTimestamp?: number;
   parameters: any;
   govtParameters: any;
 }
@@ -113,11 +115,17 @@ class ListingPhaseActions extends React.Component<ListingPhaseActionsProps> {
         progressEventName: ModalContentEventNames.IN_PROGRESS_SUBMIT_CHALLENGE,
       },
     ];
-    return <WhitelistedCard modalContentComponents={modalContentComponents} transactions={transactions} />;
+    return (
+      <WhitelistedCard
+        modalContentComponents={modalContentComponents}
+        transactions={transactions}
+        whitelistedTimestamp={this.props.whitelistedTimestamp!}
+      />
+    );
   }
 
   private renderRejected(): JSX.Element {
-    // @TODO(jon): Get the Rejected DateTime and Challenge Results for the challenge
+    // @TODO(jon): Get the and Challenge Results for the challenge
     // that resulted in the listing being rejected to display for this card. We should
     // probably create a Container component that fetches that data and stores it in Redux,
     // and then the container should render this RejectedCard.
@@ -130,6 +138,7 @@ class ListingPhaseActions extends React.Component<ListingPhaseActionsProps> {
         votesAgainst={"27000"}
         percentFor={"73"}
         percentAgainst={"27"}
+        removedTimestamp={this.props.removedTimestamp!}
       />
     );
   }

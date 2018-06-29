@@ -212,9 +212,17 @@ storiesOf("Listing Details Phase Card", module)
     );
   })
   .add("Whitelisted", () => {
-    return <Container>{process.env.NODE_ENV !== "test" && <WhitelistedCard transactions={[]} />}</Container>;
+    const whitelistedTimestamp = now - oneDay;
+    return (
+      <Container>
+        {process.env.NODE_ENV !== "test" && (
+          <WhitelistedCard transactions={[]} whitelistedTimestamp={whitelistedTimestamp} />
+        )}
+      </Container>
+    );
   })
   .add("Rejected", () => {
+    const removedTimestamp = now - oneDay;
     return (
       <Container>
         {process.env.NODE_ENV !== "test" && (
@@ -224,6 +232,7 @@ storiesOf("Listing Details Phase Card", module)
             votesAgainst={votesAgainst}
             percentFor={percentFor}
             percentAgainst={percentAgainst}
+            removedTimestamp={removedTimestamp}
           />
         )}
       </Container>

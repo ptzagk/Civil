@@ -8,14 +8,27 @@ import {
   MetaItemLabel,
 } from "./styledComponents";
 import { ChallengeResults } from "./ChallengeResults";
+import { getLocalDateTimeStrings } from "@joincivil/utils";
 
-export class RejectedCard extends React.Component<ListingDetailPhaseCardComponentProps & ChallengeResultsProps> {
+export interface RejectedCardProps {
+  removedTimestamp: number;
+}
+
+export class RejectedCard extends React.Component<
+  ListingDetailPhaseCardComponentProps & ChallengeResultsProps & RejectedCardProps
+> {
   public render(): JSX.Element {
+    let displayDateTime;
+
+    if (this.props.removedTimestamp) {
+      const removedDateTime = getLocalDateTimeStrings(this.props.removedTimestamp);
+      displayDateTime = `${removedDateTime[0]} ${removedDateTime[1]}`;
+    }
     return (
       <StyledListingDetailPhaseCardContainer>
         <StyledListingDetailPhaseCardSection>
           <StyledPhaseDisplayName>Rejected Newsroom</StyledPhaseDisplayName>
-          <MetaItemValue>May 5, 2018, 8:30 GMT-0400</MetaItemValue>
+          <MetaItemValue>{displayDateTime}</MetaItemValue>
           <MetaItemLabel>Rejected date</MetaItemLabel>
         </StyledListingDetailPhaseCardSection>
         <StyledListingDetailPhaseCardSection>

@@ -3,10 +3,14 @@ import * as React from "react";
 import ListingHistory from "./ListingHistory";
 import ListingDetail from "./ListingDetail";
 import ListingPhaseActions from "./ListingPhaseActions";
-import { EthAddress, ListingWrapper } from "@joincivil/core";
+import { EthAddress, ListingWrapper, isInApplicationPhase } from "@joincivil/core";
 import { State } from "../../reducers";
 import { connect, DispatchProp } from "react-redux";
-import { fetchAndAddListingData } from "../../actionCreators/listings";
+import {
+  fetchAndAddListingData,
+  fetchListingWhitelistedTimestamp,
+  fetchListingRemovedTimestamp,
+} from "../../actionCreators/listings";
 import { NewsroomState } from "@joincivil/newsroom-manager";
 
 import styled from "styled-components";
@@ -32,6 +36,8 @@ export interface ListingReduxProps {
   newsroom: NewsroomState | undefined;
   listing: ListingWrapper | undefined;
   expiry?: number;
+  whitelistedTimestamp?: number;
+  removedTimestamp?: number;
   userAccount?: EthAddress;
   listingDataRequestStatus?: any;
   parameters: any;
@@ -40,8 +46,25 @@ export interface ListingReduxProps {
 
 class ListingPage extends React.Component<ListingReduxProps & DispatchProp<any> & ListingPageProps> {
   public componentDidUpdate(): void {
-    if (!this.props.listing && !this.props.listingDataRequestStatus) {
+    const isNotActiveRequest = !this.props.listingDataRequestStatus || !this.props.listingDataRequestStatus.isFetching;
+    let needWhitelistedTimestamp = false;
+    let needRemovedTimestamp = false;
+    const listing = this.props.listing;
+
+    if (listing) {
+      const isWhitelisted = listing.data.isWhitelisted;
+      needWhitelistedTimestamp = isWhitelisted && !listing.data.challenge && !this.props.whitelistedTimestamp;
+      needRemovedTimestamp = !isWhitelisted && !isInApplicationPhase(listing.data) && !this.props.removedTimestamp;
+    }
+
+    console.log("fetch?", isNotActiveRequest, "(", !listing, needWhitelistedTimestamp, needRemovedTimestamp, ")");
+
+    if (isNotActiveRequest && !listing) {
       this.props.dispatch!(fetchAndAddListingData(this.props.match.params.listing.toString()));
+    } else if (listing && isNotActiveRequest && needWhitelistedTimestamp) {
+      this.props.dispatch!(fetchListingWhitelistedTimestamp(this.props.match.params.listing.toString()));
+    } else if (listing && isNotActiveRequest && needRemovedTimestamp) {
+      this.props.dispatch!(fetchListingRemovedTimestamp(this.props.match.params.listing.toString()));
     }
   }
 
@@ -66,6 +89,8 @@ class ListingPage extends React.Component<ListingReduxProps & DispatchProp<any> 
               <ListingPhaseActions
                 listing={this.props.listing!}
                 expiry={this.props.expiry}
+                whitelistedTimestamp={this.props.whitelistedTimestamp}
+                removedTimestamp={this.props.removedTimestamp}
                 parameters={this.props.parameters}
                 govtParameters={this.props.govtParameters}
               />
@@ -92,15 +117,21 @@ const mapToStateToProps = (state: State, ownProps: ListingPageProps): ListingRed
 
   let listing;
   let expiry;
+  let whitelistedTimestamp;
+  let removedTimestamp;
   const l = listings.get(listingAddress);
   if (l) {
     listing = l.listing;
     expiry = l.expiry;
+    whitelistedTimestamp = l.whitelistedTimestamp;
+    removedTimestamp = l.removedTimestamp;
   }
   return {
     newsroom: newsrooms.get(listingAddress),
     listing,
     expiry,
+    whitelistedTimestamp,
+    removedTimestamp,
     userAccount: user.account,
     listingDataRequestStatus,
     parameters,
