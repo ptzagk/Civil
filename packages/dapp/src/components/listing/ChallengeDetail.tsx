@@ -529,7 +529,7 @@ class ChallengeResolveContainer extends React.Component<ChallengeContainerProps>
     ];
 
     const ChallengeResolveCardContainer = (WrappedComponent: React.ComponentClass<ListingDetailPhaseCardComponentProps & ChallengePhaseProps & ChallengeResultsProps>) => {
-      const challengeComponent = (props: ListingDetailPhaseCardComponentProps & ChallengePhaseProps & ChallengeResultsProps) => <WrappedComponent {...props} />
+      const challengeComponent = (props: ListingDetailPhaseCardComponentProps & ChallengePhaseProps & ChallengeResultsProps) => <WrappedComponent {...props} />;
       return compose(
         connectChallengePhase,
         connectChallengeResults
