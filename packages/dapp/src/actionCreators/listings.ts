@@ -17,7 +17,12 @@ export enum listingActions {
   FETCH_LISTING_DATA_IN_PROGRESS = "FETCH_LISTING_DATA_IN_PROGRESS",
 }
 
-export const addListing = (listing: ListingWrapper, whitelistedTimestamp?: number, removedTimestamp?: number, challengeSucceededChallengeID?: BigNumber): any => {
+export const addListing = (
+  listing: ListingWrapper,
+  whitelistedTimestamp?: number,
+  removedTimestamp?: number,
+  challengeSucceededChallengeID?: BigNumber,
+): any => {
   return async (dispatch: Dispatch<any>, getState: any): Promise<AnyAction> => {
     if (!listing.data.challengeID.isZero()) {
       const wrappedChallenge = {
@@ -157,7 +162,7 @@ export const fetchListingWhitelistedTimestamp = (listingID: string): any => {
       return dispatch(fetchListingComplete(listingID));
     }
   };
-}
+};
 
 export const fetchListingRemovedTimestamp = (listingID: string): any => {
   return async (dispatch: Dispatch<any>, getState: any): Promise<AnyAction> => {
@@ -173,7 +178,7 @@ export const fetchListingRemovedTimestamp = (listingID: string): any => {
       const listing = tcr.getListing(listingID);
       const wrappedListing = await listing.getListingWrapper();
       const listingRemovedTimestamp = await listing.getListingRemovedTimestamp();
-      const challengeSucceededChallengeID = await listing.getChallengeSucceededChallengeID()
+      const challengeSucceededChallengeID = await listing.getChallengeSucceededChallengeID();
       dispatch(addListing(wrappedListing, undefined, listingRemovedTimestamp, challengeSucceededChallengeID));
 
       return dispatch(fetchListingComplete(listingID));
@@ -188,7 +193,7 @@ export const fetchListingRemovedTimestamp = (listingID: string): any => {
       return dispatch(fetchListingComplete(listingID));
     }
   };
-}
+};
 
 export const setupListingHistorySubscription = (listingID: string): any => {
   return (dispatch: Dispatch<any>, getState: any): any => {

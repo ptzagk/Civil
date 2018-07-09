@@ -51,10 +51,7 @@ export const connectChallengeResults = <TChallengeContainerProps extends Challen
     state: State,
     ownProps: ChallengeContainerProps,
   ): ChallengeContainerReduxProps & ChallengeContainerProps => {
-    const {
-      challenges,
-      challengesFetching,
-    } = state.networkDependent;
+    const { challenges, challengesFetching } = state.networkDependent;
     let challengeData;
     const challengeID = ownProps.challengeID;
     if (challengeID) {
@@ -66,11 +63,14 @@ export const connectChallengeResults = <TChallengeContainerProps extends Challen
     }
     return {
       challengeData,
+      challengeDataRequestStatus,
       ...ownProps,
     };
   };
 
-  class HOChallengeResultsContainer extends React.Component<TChallengeContainerProps & ChallengeContainerReduxProps & DispatchProp<any>> {
+  class HOChallengeResultsContainer extends React.Component<
+    TChallengeContainerProps & ChallengeContainerReduxProps & DispatchProp<any>
+  > {
     public componentDidUpdate(): void {
       if (!this.props.challengeData && !this.props.challengeDataRequestStatus) {
         this.props.dispatch!(fetchAndAddChallengeData(this.props.challengeID.toString()));
@@ -119,10 +119,7 @@ export const connectChallengePhase = <TChallengeContainerProps extends Challenge
     state: State,
     ownProps: ChallengeContainerProps,
   ): ChallengeContainerReduxProps & ChallengeContainerProps => {
-    const {
-      challenges,
-      challengesFetching,
-    } = state.networkDependent;
+    const { challenges, challengesFetching } = state.networkDependent;
     let challengeData;
     const challengeID = ownProps.challengeID;
     if (challengeID) {
@@ -134,11 +131,14 @@ export const connectChallengePhase = <TChallengeContainerProps extends Challenge
     }
     return {
       challengeData,
+      challengeDataRequestStatus,
       ...ownProps,
     };
   };
 
-  class HOChallengePhaseContainer extends React.Component<TChallengeContainerProps & ChallengeContainerReduxProps & DispatchProp<any>> {
+  class HOChallengePhaseContainer extends React.Component<
+    TChallengeContainerProps & ChallengeContainerReduxProps & DispatchProp<any>
+  > {
     public componentDidUpdate(): void {
       if (!this.props.challengeData && !this.props.challengeDataRequestStatus) {
         this.props.dispatch!(fetchAndAddChallengeData(this.props.challengeID.toString()));

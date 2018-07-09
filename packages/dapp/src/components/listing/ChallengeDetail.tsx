@@ -26,7 +26,9 @@ import {
   ModalOrderedList,
   ModalListItem,
   ModalListItemTypes,
-  ListingDetailPhaseCardComponentProps, ChallengePhaseProps, ChallengeResultsProps
+  ListingDetailPhaseCardComponentProps,
+  ChallengePhaseProps,
+  ChallengeResultsProps,
 } from "@joincivil/components";
 import AppealDetail from "./AppealDetail";
 import ChallengeRewardsDetail from "./ChallengeRewardsDetail";
@@ -63,6 +65,8 @@ export interface ChallengeContainerProps {
   listingAddress: EthAddress;
   challengeID: BigNumber;
   showNotFoundMessage?: boolean;
+  modalContentComponents?: any;
+  transactions?: any[];
 }
 
 export interface ChallengeContainerReduxProps {
@@ -518,8 +522,15 @@ const mapStateToProps = (
   };
 };
 
+/*
+export const ChallengeResolve = compose(
+  connectChallengePhase,
+  connectChallengeResults,
+)(ChallengeResolveCardComponent) as React.Component;
+*/
+
 // A container for the Challenge Resolve Card component
-class ChallengeResolveContainer extends React.Component<ChallengeContainerProps> {
+export class ChallengeResolve extends React.Component<ChallengeContainerProps> {
   public render(): JSX.Element | null {
     const resolveChallengeProgressModal = this.renderResolveChallengeProgressModal();
     const modalContentComponents = {
@@ -529,18 +540,24 @@ class ChallengeResolveContainer extends React.Component<ChallengeContainerProps>
       { transaction: this.resolve, progressEventName: ModalContentEventNames.IN_PROGRESS_RESOLVE_CHALLENGE },
     ];
 
-    const ChallengeResolveCardContainer = (WrappedComponent: React.ComponentClass<ListingDetailPhaseCardComponentProps & ChallengePhaseProps & ChallengeResultsProps>) => {
-      const challengeComponent = (props: ListingDetailPhaseCardComponentProps & ChallengePhaseProps & ChallengeResultsProps) => <WrappedComponent {...props} />;
-      return compose(
-        connectChallengePhase,
-        connectChallengeResults
-      )(challengeComponent);
+    const ChallengeResolveCardContainer = (
+      WrappedComponent: React.ComponentClass<
+        ListingDetailPhaseCardComponentProps & ChallengePhaseProps & ChallengeResultsProps
+      >,
+    ) => {
+      const challengeComponent = (
+        props: ListingDetailPhaseCardComponentProps & ChallengePhaseProps & ChallengeResultsProps,
+      ) => <WrappedComponent {...props} />;
+      return compose(connectChallengePhase, connectChallengeResults)(challengeComponent) as React.ComponentClass<
+        ChallengeContainerProps
+      >;
     };
 
     const ChallengeResolveCard = ChallengeResolveCardContainer(ChallengeResolveCardComponent);
 
     return (
       <ChallengeResolveCard
+        listingAddress={this.props.listingAddress}
         challengeID={this.props.challengeID}
         modalContentComponents={modalContentComponents}
         transactions={transactions}
@@ -567,6 +584,6 @@ class ChallengeResolveContainer extends React.Component<ChallengeContainerProps>
   };
 }
 
-export const ChallengeResolve = connect(mapStateToProps)(ChallengeResolveContainer);
+// export const ChallengeResolve = connect(mapStateToProps)(ChallengeResolveContainer);
 
 export default connect(mapStateToProps)(ChallengeContainer);

@@ -13,7 +13,13 @@ import {
   fetchListingRemovedTimestamp,
 } from "../../actionCreators/listings";
 import { NewsroomState } from "@joincivil/newsroom-manager";
-import { makeGetListingPhaseState, makeGetListing, makeGetListingExpiry, makeGetListingWhitelistedTimestamp, makeGetListingRemovedTimestamp } from "../../selectors";
+import {
+  makeGetListingPhaseState,
+  makeGetListing,
+  makeGetListingExpiry,
+  makeGetListingWhitelistedTimestamp,
+  makeGetListingRemovedTimestamp,
+} from "../../selectors";
 
 import styled from "styled-components";
 const GridRow = styled.div`
@@ -67,11 +73,11 @@ class ListingPageComponent extends React.Component<ListingReduxProps & DispatchP
     console.log("fetch?", isNotActiveRequest, "(", !listing, needWhitelistedTimestamp, needRemovedTimestamp, ")");
 
     if (isNotActiveRequest && !listing) {
-      this.props.dispatch!(fetchAndAddListingData(this.props.match.params.listing.toString()));
+      this.props.dispatch!(fetchAndAddListingData(this.props.listingAddress));
     } else if (listing && isNotActiveRequest && needWhitelistedTimestamp) {
-      this.props.dispatch!(fetchListingWhitelistedTimestamp(this.props.match.params.listing.toString()));
+      this.props.dispatch!(fetchListingWhitelistedTimestamp(this.props.listingAddress));
     } else if (listing && isNotActiveRequest && needRemovedTimestamp) {
-      this.props.dispatch!(fetchListingRemovedTimestamp(this.props.match.params.listing.toString()));
+      this.props.dispatch!(fetchListingRemovedTimestamp(this.props.listingAddress));
     }
   }
 

@@ -28,9 +28,9 @@ export const getListingWrapper = (state: State, props: ListingContainerProps) =>
   if (!props.listingAddress) {
     return;
   }
-  const listings: Map<string, ListingWrapperWithExpiry> = state.networkDependent.listings;
+  const listings: Map<string, ExtendedListingWrapper> = state.networkDependent.listings;
   const listingAddress = props.listingAddress;
-  const listing: ListingWrapperWithExpiry | undefined = listings.get(listingAddress)
+  const listing: ExtendedListingWrapper | undefined = listings.get(listingAddress)
     ? listings.get(listingAddress)
     : undefined;
   return listing;
