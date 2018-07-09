@@ -19,6 +19,7 @@ import {
 } from "@joincivil/core";
 import { listingActions } from "../actionCreators/listings";
 import BigNumber from "bignumber.js";
+import { Subscription } from "rxjs";
 
 export interface ExtendedListingWrapper {
   listing: ListingWrapper;
@@ -80,6 +81,18 @@ export function histories(
           .sort((a, b) => a.blockNumber! - b.blockNumber!)
           .toList(),
       );
+    default:
+      return state;
+  }
+}
+
+export function listingHistorySubscriptions(
+  state: Map<string, Subscription> = Map<string, Subscription>(),
+  action: AnyAction,
+): Map<string, Subscription> {
+  switch (action.type) {
+    case listingActions.ADD_HISTORY_SUBSCRIPTION:
+      return state.set(action.data.address, action.data.subscription);
     default:
       return state;
   }

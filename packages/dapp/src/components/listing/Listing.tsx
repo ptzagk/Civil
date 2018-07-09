@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import ListingDiscourse from "./ListingDiscourse";
 import ListingHistory from "./ListingHistory";
 import ListingDetail from "./ListingDetail";
 import ListingPhaseActions from "./ListingPhaseActions";
@@ -12,6 +13,7 @@ import {
   fetchListingRemovedTimestamp,
 } from "../../actionCreators/listings";
 import { NewsroomState } from "@joincivil/newsroom-manager";
+import { makeGetListingPhaseState, makeGetListing, makeGetListingExpiry, makeGetListingWhitelistedTimestamp, makeGetListingRemovedTimestamp } from "../../selectors";
 
 import styled from "styled-components";
 const GridRow = styled.div`
@@ -32,6 +34,10 @@ export interface ListingPageProps {
   match: any;
 }
 
+export interface ListingPageComponentProps {
+  listingAddress: EthAddress;
+}
+
 export interface ListingReduxProps {
   newsroom: NewsroomState | undefined;
   listing: ListingWrapper | undefined;
@@ -40,11 +46,12 @@ export interface ListingReduxProps {
   removedTimestamp?: number;
   userAccount?: EthAddress;
   listingDataRequestStatus?: any;
+  listingPhaseState?: any;
   parameters: any;
   govtParameters: any;
 }
 
-class ListingPage extends React.Component<ListingReduxProps & DispatchProp<any> & ListingPageProps> {
+class ListingPageComponent extends React.Component<ListingReduxProps & DispatchProp<any> & ListingPageComponentProps> {
   public componentDidUpdate(): void {
     const isNotActiveRequest = !this.props.listingDataRequestStatus || !this.props.listingDataRequestStatus.isFetching;
     let needWhitelistedTimestamp = false;
@@ -75,13 +82,19 @@ class ListingPage extends React.Component<ListingReduxProps & DispatchProp<any> 
     return (
       <>
         {listingExistsAsNewsroom && (
-          <ListingDetail userAccount={this.props.userAccount} listing={listing!} newsroom={newsroom!.wrapper} />
+          <ListingDetail
+            userAccount={this.props.userAccount}
+            listing={listing!}
+            newsroom={newsroom!.wrapper}
+            listingPhaseState={this.props.listingPhaseState}
+          />
         )}
 
         <GridRow>
           <LeftShark>
             {!listingExistsAsNewsroom && this.renderListingNotFound()}
-            <ListingHistory listing={this.props.match.params.listing} />
+            <ListingHistory listing={this.props.listingAddress} />
+            <ListingDiscourse />
           </LeftShark>
 
           <RightShark>
@@ -106,37 +119,42 @@ class ListingPage extends React.Component<ListingReduxProps & DispatchProp<any> 
   }
 }
 
-const mapToStateToProps = (state: State, ownProps: ListingPageProps): ListingReduxProps => {
-  const { newsrooms, listings, listingsFetching, user, parameters, govtParameters } = state.networkDependent;
-  const listingAddress = ownProps.match.params.listing;
+const makeMapStateToProps = () => {
+  const getListingPhaseState = makeGetListingPhaseState();
+  const getListing = makeGetListing();
+  const getListingExpiry = makeGetListingExpiry();
+  const getListingWhitelistedTimestamp = makeGetListingWhitelistedTimestamp();
+  const getListingRemovedTimestamp = makeGetListingRemovedTimestamp();
+  const mapStateToProps = (state: State, ownProps: ListingPageComponentProps): ListingReduxProps => {
+    const { newsrooms } = state;
+    const { listingsFetching, user, parameters, govtParameters } = state.networkDependent;
 
-  let listingDataRequestStatus;
-  if (listingAddress) {
-    listingDataRequestStatus = listingsFetching.get(listingAddress.toString());
-  }
+    let listingDataRequestStatus;
+    if (ownProps.listingAddress) {
+      listingDataRequestStatus = listingsFetching.get(ownProps.listingAddress.toString());
+    }
 
-  let listing;
-  let expiry;
-  let whitelistedTimestamp;
-  let removedTimestamp;
-  const l = listings.get(listingAddress);
-  if (l) {
-    listing = l.listing;
-    expiry = l.expiry;
-    whitelistedTimestamp = l.whitelistedTimestamp;
-    removedTimestamp = l.removedTimestamp;
-  }
-  return {
-    newsroom: newsrooms.get(listingAddress),
-    listing,
-    expiry,
-    whitelistedTimestamp,
-    removedTimestamp,
-    userAccount: user.account,
-    listingDataRequestStatus,
-    parameters,
-    govtParameters,
+    return {
+      newsroom: newsrooms.get(ownProps.listingAddress),
+      listing: getListing(state, ownProps),
+      expiry: getListingExpiry(state, ownProps),
+      whitelistedTimestamp: getListingWhitelistedTimestamp(state, ownProps),
+      removedTimestamp: getListingRemovedTimestamp(state, ownProps),
+      listingDataRequestStatus,
+      listingPhaseState: getListingPhaseState(state, ownProps),
+      userAccount: user.account,
+      parameters,
+      govtParameters,
+    };
   };
+  return mapStateToProps;
 };
 
-export default connect(mapToStateToProps)(ListingPage);
+export const ListingPage = connect(makeMapStateToProps)(ListingPageComponent);
+
+export default class ListingPageContainer extends React.Component<ListingPageProps> {
+  public render(): JSX.Element {
+    const listingAddress = this.props.match.params.listing;
+    return <ListingPage listingAddress={listingAddress} />;
+  }
+}
