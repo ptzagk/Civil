@@ -13,17 +13,17 @@ contract AddressRegistry {
   // EVENTS
   // ------
 
-  event _Application(address indexed listingAddress, uint deposit, uint appEndDate, string data, address indexed applicant);
-  event _Challenge(address indexed listingAddress, uint indexed challengeID, string data, uint commitEndDate, uint revealEndDate, address indexed challenger);
-  event _Deposit(address indexed listingAddress, uint added, uint newTotal, address indexed owner);
-  event _Withdrawal(address indexed listingAddress, uint withdrew, uint newTotal, address indexed owner);
-  event _ApplicationWhitelisted(address indexed listingAddress);
-  event _ApplicationRemoved(address indexed listingAddress);
-  event _ListingRemoved(address indexed listingAddress);
-  event _ListingWithdrawn(address indexed listingAddress);
-  event _TouchAndRemoved(address indexed listingAddress);
-  event _ChallengeFailed(address indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
-  event _ChallengeSucceeded(address indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
+  event _Application(bytes32 indexed listingAddress, uint deposit, uint appEndDate, string data, address indexed applicant);
+  event _Challenge(bytes32 indexed listingAddress, uint indexed challengeID, string data, uint commitEndDate, uint revealEndDate, address indexed challenger);
+  event _Deposit(bytes32 indexed listingAddress, uint added, uint newTotal, address indexed owner);
+  event _Withdrawal(bytes32 indexed listingAddress, uint withdrew, uint newTotal, address indexed owner);
+  event _ApplicationWhitelisted(bytes32 indexed listingAddress);
+  event _ApplicationRemoved(bytes32 indexed listingAddress);
+  event _ListingRemoved(bytes32 indexed listingAddress);
+  event _ListingWithdrawn(bytes32 indexed listingAddress);
+  event _TouchAndRemoved(bytes32 indexed listingAddress);
+  event _ChallengeFailed(bytes32 indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
+  event _ChallengeSucceeded(bytes32 indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
   event _RewardClaimed(uint indexed challengeID, uint reward, address indexed voter);
 
   using SafeMath for uint;
@@ -49,7 +49,7 @@ contract AddressRegistry {
   mapping(uint => Challenge) public challenges;
 
   // Maps addresses to associated listing data
-  mapping(address => Listing) public listings;
+  mapping(bytes32 => Listing) public listings;
 
   // Global Variables
   EIP20Interface public token;
@@ -92,7 +92,7 @@ contract AddressRegistry {
   @param amount The number of ERC20 tokens a user is willing to potentially stake
   @param data Extra data relevant to the application. Think IPFS hashes.
   */
-  function apply(address listingAddress, uint amount, string data) public {
+  function apply(bytes32 listingAddress, uint amount, string data) public {
     Listing storage listing = listings[listingAddress];
     require(!listing.isWhitelisted);
     require(!appWasMade(listingAddress));
@@ -119,7 +119,7 @@ contract AddressRegistry {
   Emits `_Deposit` if successful
   @param amount The number of ERC20 tokens to increase a user's unstaked deposit by
   */
-  function deposit(address listingAddress, uint amount) external {
+  function deposit(bytes32 listingAddress, uint amount) external {
     Listing storage listing = listings[listingAddress];
     require(listing.owner == msg.sender);
 
@@ -141,7 +141,7 @@ contract AddressRegistry {
   @param listingAddress Address of listing to withdraw tokens from
   @param amount The number of ERC20 tokens to withdraw from the unstaked deposit
   */
-  function withdraw(address listingAddress, uint amount) external {
+  function withdraw(bytes32 listingAddress, uint amount) external {
     Listing storage listing = listings[listingAddress];
 
     require(listing.owner == msg.sender);
@@ -167,7 +167,7 @@ contract AddressRegistry {
   Emits `_ListingWithdrawn` if successful
   @param listingAddress Address of listing to exit
   */
-  function exitListing(address listingAddress) external {
+  function exitListing(bytes32 listingAddress) external {
     Listing storage listing = listings[listingAddress];
 
     require(listing.owner == msg.sender);
@@ -199,7 +199,7 @@ contract AddressRegistry {
   @param listingAddress The listingAddress being challenged, whether listed or in application
   @param data        Extra data relevant to the challenge. Think IPFS hashes.
   */
-  function challenge(address listingAddress, string data) public returns (uint challengeID) {
+  function challenge(bytes32 listingAddress, string data) public returns (uint challengeID) {
     Listing storage listing = listings[listingAddress];
     uint deposit = parameterizer.get("minDeposit");
 
@@ -250,7 +250,7 @@ contract AddressRegistry {
   @notice Updates a listing's status from 'application' to 'listing' or resolves a challenge if one exists.
   @param listingAddress The listingAddress whose status is being updated
   */
-  function updateStatus(address listingAddress) public {
+  function updateStatus(bytes32 listingAddress) public {
     if (canBeWhitelisted(listingAddress)) {
       whitelistApplication(listingAddress);
     } else if (challengeCanBeResolved(listingAddress)) {
@@ -345,7 +345,7 @@ contract AddressRegistry {
   @return True if an application has passed its expiry without being challenged or it was challenged and the challenge
   has been resolved and listing is not already whitelisted. False otherwise.
   */
-  function canBeWhitelisted(address listingAddress) view public returns (bool) {
+  function canBeWhitelisted(bytes32 listingAddress) view public returns (bool) {
     Listing listing = listings[listingAddress];
     uint challengeID = listing.challengeID;
     Challenge challenge = challenges[challengeID];
@@ -371,7 +371,7 @@ contract AddressRegistry {
   @param listingAddress The listingAddress whose status is to be examined
   @return True if an address is in the application phase, or whitelisted. False if never applied or listing/application removed.
   */
-  function appWasMade(address listingAddress) view public returns (bool) {
+  function appWasMade(bytes32 listingAddress) view public returns (bool) {
     return listings[listingAddress].applicationExpiry > 0;
   }
 
@@ -380,7 +380,7 @@ contract AddressRegistry {
   @param listingAddress The listingAddress whose status is to be examined
   @return True if listing has an active, unresolved challenge. False otherwise.
   */
-  function challengeExists(address listingAddress) view public returns (bool) {
+  function challengeExists(bytes32 listingAddress) view public returns (bool) {
     uint challengeID = listings[listingAddress].challengeID;
 
     return (listings[listingAddress].challengeID > 0 && !challenges[challengeID].resolved);
@@ -392,7 +392,7 @@ contract AddressRegistry {
   @param listingAddress A listingAddress with an unresolved challenge
   @return True if a challenge can be resolved, false otherwise
   */
-  function challengeCanBeResolved(address listingAddress) view public returns (bool) {
+  function challengeCanBeResolved(bytes32 listingAddress) view public returns (bool) {
     uint challengeID = listings[listingAddress].challengeID;
 
     require(challengeExists(listingAddress));
@@ -443,7 +443,7 @@ contract AddressRegistry {
   de-whitelists the listingAddress.
   @param listingAddress A listingAddress with a challenge that is to be resolved
   */
-  function resolveChallenge(address listingAddress) internal {
+  function resolveChallenge(bytes32 listingAddress) internal {
     Listing storage listing = listings[listingAddress];
     uint challengeID = listing.challengeID;
     Challenge storage challenge = challenges[challengeID];
@@ -478,7 +478,7 @@ contract AddressRegistry {
   Called by resolveChallenge() if an application/listing beat a challenge.
   @param listingAddress The listingAddress of an application/listing to be isWhitelist
   */
-  function whitelistApplication(address listingAddress) internal {
+  function whitelistApplication(bytes32 listingAddress) internal {
     Listing storage listing = listings[listingAddress];
     bool wasWhitelisted = listing.isWhitelisted;
     listing.isWhitelisted = true;
@@ -491,7 +491,7 @@ contract AddressRegistry {
   @notice Deletes a listingAddress from the whitelist and transfers tokens back to owner
   @param listingAddress The listing to delete
   */
-  function resetListing(address listingAddress) internal {
+  function resetListing(bytes32 listingAddress) internal {
     Listing storage listing = listings[listingAddress];
     bool wasWhitelisted = listing.isWhitelisted;
     address owner = listing.owner;

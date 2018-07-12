@@ -14,13 +14,13 @@ A successful Appeal Challenge reverses the result of the Granted Appeal (again, 
 */
 contract CivilTCR is RestrictedAddressRegistry {
 
-  event _AppealRequested(address indexed listingAddress, uint indexed challengeID, uint appealFeePaid, address requester);
-  event _AppealGranted(address indexed listingAddress, uint indexed challengeID);
-  event _FailedChallengeOverturned(address indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
-  event _SuccessfulChallengeOverturned(address indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
-  event _GrantedAppealChallenged(address indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, string data);
-  event _GrantedAppealOverturned(address indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
-  event _GrantedAppealConfirmed(address indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
+  event _AppealRequested(bytes32 indexed listingAddress, uint indexed challengeID, uint appealFeePaid, address requester);
+  event _AppealGranted(bytes32 indexed listingAddress, uint indexed challengeID);
+  event _FailedChallengeOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
+  event _SuccessfulChallengeOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
+  event _GrantedAppealChallenged(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, string data);
+  event _GrantedAppealOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
+  event _GrantedAppealConfirmed(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
   event _GovernmentTransfered(address newGovernment);
 
   modifier onlyGovernmentController {
@@ -93,7 +93,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   Emits `_AppealRequested` if successful
   @param listingAddress address of listing that has challenged result that the user wants to appeal
   */
-  function requestAppeal(address listingAddress) external {
+  function requestAppeal(bytes32 listingAddress) external {
     Listing storage listing = listings[listingAddress];
     require(voting.pollEnded(listing.challengeID));
     require(challengeRequestAppealExpiries[listing.challengeID] > now); // "Request Appeal Phase" active
@@ -128,7 +128,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   Emits `_AppealGranted` if successful
   @param listingAddress The address of the listing associated with the appeal
   */
-  function grantAppeal(address listingAddress) external onlyAppellate {
+  function grantAppeal(bytes32 listingAddress) external onlyAppellate {
     Listing storage listing = listings[listingAddress];
     Appeal storage appeal = appeals[listing.challengeID];
     require(appeal.appealPhaseExpiry > now); // "Judge Appeal Phase" active
@@ -162,7 +162,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   `appealCanBeResolved` is true for given `listingAddress`.
   @param listingAddress Address of the listing of which the status is being updated
   */
-  function updateStatus(address listingAddress) public {
+  function updateStatus(bytes32 listingAddress) public {
     if (canBeWhitelisted(listingAddress)) {
       whitelistApplication(listingAddress);
     } else if (challengeCanBeResolved(listingAddress)) {
@@ -180,7 +180,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   @notice Update state of listing after "Judge Appeal Phase" has ended. Reverts if cannot be processed yet.
   @param listingAddress Address of listing associated with appeal
   */
-  function resolveAppeal(address listingAddress) internal {
+  function resolveAppeal(bytes32 listingAddress) internal {
     Listing listing = listings[listingAddress];
     Appeal appeal = appeals[listing.challengeID];
     if (appeal.appealGranted) {
@@ -213,7 +213,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   @param listingAddress The listingAddress being challenged, whether listed or in application
   @param data Extra data relevant to the challenge. Think IPFS hashes.
   */
-  function challenge(address listingAddress, string data) public returns (uint challengeID) {
+  function challenge(bytes32 listingAddress, string data) public returns (uint challengeID) {
     uint id = super.challenge(listingAddress, data);
     if (id > 0) {
       uint challengeLength = parameterizer.get("commitStageLen") + parameterizer.get("revealStageLen") + government.get("requestAppealLen");
@@ -241,7 +241,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   @param listingAddress The listingAddress associated with the appeal
   @param data Extra data relevant to the appeal challenge. Think URLs.
   */
-  function challengeGrantedAppeal(address listingAddress, string data) public returns (uint challengeID) {
+  function challengeGrantedAppeal(bytes32 listingAddress, string data) public returns (uint challengeID) {
     Listing storage listing = listings[listingAddress];
     Appeal storage appeal = appeals[listing.challengeID];
     uint pct = government.get("appealVotePercentage");
@@ -279,7 +279,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   Emits `_GrantedAppealOverturned` if appeal challenge successful.
   @param listingAddress The address of a listing with an appeal challenge that is to be resolved
   */
-  function resolveAppealChallenge(address listingAddress) internal {
+  function resolveAppealChallenge(bytes32 listingAddress) internal {
     Listing storage listing = listings[listingAddress];
     uint challengeID = listings[listingAddress].challengeID;
     Appeal storage appeal = appeals[listing.challengeID];
@@ -365,7 +365,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   Emits `_NewListingWhitelisted` if original challenge succeeded and listing was not previously whitelisted.
   @param listingAddress Address of listing with a challenge that is to be resolved
   */
-  function resolveOverturnedChallenge(address listingAddress) private {
+  function resolveOverturnedChallenge(bytes32 listingAddress) private {
     Listing storage listing = listings[listingAddress];
     uint challengeID = listing.challengeID;
     Challenge storage challenge = challenges[challengeID];
@@ -398,7 +398,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   @return True if challenge exists, has not already been resolved, has not had appeal requested, and has passed the request
   appeal expiry time. False otherwise.
   */
-  function challengeCanBeResolved(address listingAddress) view public returns (bool canBeResolved) {
+  function challengeCanBeResolved(bytes32 listingAddress) view public returns (bool canBeResolved) {
     uint challengeID = listings[listingAddress].challengeID;
     require(challengeExists(listingAddress));
     if (challengeRequestAppealExpiries[challengeID] > now) {
@@ -414,7 +414,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   (1) had an appeal granted and passed the appeal opten to challenge expiry OR (2) has not had an appeal granted and
   has passed the appeal phase expiry. False otherwise.
   */
-  function appealCanBeResolved(address listingAddress) view public returns (bool canBeResolved) {
+  function appealCanBeResolved(bytes32 listingAddress) view public returns (bool canBeResolved) {
     uint challengeID = listings[listingAddress].challengeID;
     Appeal appeal = appeals[challengeID];
     require(challengeExists(listingAddress));
@@ -433,7 +433,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   @param listingAddress An address for a listing to check
   @return True if appeal challenge exists, has not already been resolved, and the voting phase for the appeal challenge is ended. False otherwise.
   */
-  function appealChallengeCanBeResolved(address listingAddress) view public returns (bool canBeResolved) {
+  function appealChallengeCanBeResolved(bytes32 listingAddress) view public returns (bool canBeResolved) {
     uint challengeID = listings[listingAddress].challengeID;
     Appeal appeal = appeals[challengeID];
     if (appeal.appealChallengeID == 0) {

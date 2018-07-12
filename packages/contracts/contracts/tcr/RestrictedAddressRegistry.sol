@@ -46,7 +46,7 @@ contract RestrictedAddressRegistry is ContractAddressRegistry {
   @param amount The number of ERC20 tokens a user is willing to potentially stake
   @param data Extra data relevant to the application. Think IPFS hashes.
   */
-  function apply(address listingAddress, uint amount, string data) onlyContractOwner(listingAddress) public {
+  function apply(bytes32 listingAddress, uint amount, string data) onlyContractOwner(address(listingAddress)) public {
     super.apply(listingAddress, amount, data);
   }
 }

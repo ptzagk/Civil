@@ -44,7 +44,7 @@ contract ContractAddressRegistry is AddressRegistry {
   @param amount The number of ERC20 tokens a user is willing to potentially stake
   @param data Extra data relevant to the application. Think IPFS hashes.
   */
-  function apply(address listingAddress, uint amount, string data) onlyContract(listingAddress) public {
+  function apply(bytes32 listingAddress, uint amount, string data) onlyContract(address(listingAddress)) public {
     super.apply(listingAddress, amount, data);
   }
 }

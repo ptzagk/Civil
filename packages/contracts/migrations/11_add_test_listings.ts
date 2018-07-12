@@ -14,13 +14,16 @@ module.exports = (deployer: any, network: string, accounts: string[]) => {
       const newsroom1 = await Newsroom.new("Fake News 1000", "http://fakecharter.uri", web3.sha3(), {
         from: accounts[5],
       });
-      await civilTCR.apply(newsroom1.address, 100, "", { from: accounts[5] });
+      const version = "0x000000000000000000000000" + newsroom1.address.substring(2);
+      console.log("bytes32 version: ", version);
+      console.log("length: ", version.length);
+      await civilTCR.apply(version, 100, "", { from: accounts[5] });
 
       const newsroom2 = await Newsroom.new("The Ultra News 2000", "https://fakecharter.com", web3.sha3(), {
         from: accounts[5],
       });
-      await civilTCR.apply(newsroom2.address, 100, "", { from: accounts[5] });
-      await civilTCR.challenge(newsroom2.address, "", { from: accounts[5] });
+      await civilTCR.apply(newsroom2.address + "000000000000000000000000", 100, "", { from: accounts[5] });
+      await civilTCR.challenge(newsroom2.address + "000000000000000000000000", "", { from: accounts[5] });
     }
   });
 };
