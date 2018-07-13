@@ -6,8 +6,9 @@ import "./ContractAddressRegistry.sol";
 
 contract RestrictedAddressRegistry is ContractAddressRegistry {
 
-  modifier onlyContractOwner(address _contractAddress) {
-    Ownable ownedContract = Ownable(_contractAddress);
+  modifier onlyContractOwner(bytes32 _contractAddress) {
+    address contractAddress = address(_contractAddress);
+    Ownable ownedContract = Ownable(contractAddress);
     require(ownedContract.owner() == msg.sender);
     _;
   }
@@ -46,7 +47,7 @@ contract RestrictedAddressRegistry is ContractAddressRegistry {
   @param amount The number of ERC20 tokens a user is willing to potentially stake
   @param data Extra data relevant to the application. Think IPFS hashes.
   */
-  function apply(bytes32 listingAddress, uint amount, string data) onlyContractOwner(address(listingAddress)) public {
+  function apply(bytes32 listingAddress, uint amount, string data) onlyContractOwner(listingAddress) public {
     super.apply(listingAddress, amount, data);
   }
 }

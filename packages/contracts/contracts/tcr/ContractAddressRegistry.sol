@@ -4,9 +4,12 @@ import "./AddressRegistry.sol";
 
 contract ContractAddressRegistry is AddressRegistry {
 
-  modifier onlyContract(address contractAddress) {
+  modifier onlyContract(bytes32 _contractAddress) {
     uint size;
-    assembly { size := extcodesize(contractAddress) }
+    address contractAddress = address(_contractAddress);
+    assembly { 
+      size := extcodesize(contractAddress)
+    }
     require(size > 0);
     _;
   }
@@ -44,7 +47,7 @@ contract ContractAddressRegistry is AddressRegistry {
   @param amount The number of ERC20 tokens a user is willing to potentially stake
   @param data Extra data relevant to the application. Think IPFS hashes.
   */
-  function apply(bytes32 listingAddress, uint amount, string data) onlyContract(address(listingAddress)) public {
+  function apply(bytes32 listingAddress, uint amount, string data) onlyContract(listingAddress) public {
     super.apply(listingAddress, amount, data);
   }
 }

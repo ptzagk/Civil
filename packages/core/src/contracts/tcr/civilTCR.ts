@@ -54,6 +54,7 @@ const debug = Debug("civil:tcr");
 export class CivilTCR extends BaseWrapper<CivilTCRContract> {
   public static singleton(ethApi: EthApi, contentProvider: ContentProvider): CivilTCR {
     const instance = CivilTCRContract.singletonTrusted(ethApi);
+    console.log("instance: ", instance);
     if (!instance) {
       debug("Smart-contract wrapper for TCR returned null, unsupported network");
       throw new Error(CivilErrors.UnsupportedNetwork);
@@ -245,7 +246,10 @@ export class CivilTCR extends BaseWrapper<CivilTCRContract> {
   public listingsInApplicationStage(fromBlock: number | "latest" = 0): Observable<ListingWrapper> {
     return this.instance
       ._ApplicationStream({}, { fromBlock })
-      .map(e => new Listing(this.ethApi, this.instance, e.args.listingAddress))
+      .map(e => {
+        console.log("e: ", e)
+        return new Listing(this.ethApi, this.instance, e.args.listingAddress
+      )})
       .concatMap(async l => l.getListingWrapper());
   }
 

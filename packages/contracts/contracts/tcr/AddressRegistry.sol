@@ -13,7 +13,7 @@ contract AddressRegistry {
   // EVENTS
   // ------
 
-  event _Application(bytes32 indexed listingAddress, uint deposit, uint appEndDate, string data, address indexed applicant);
+  event _Application(bytes32 indexed listingAddress, uint deposit, uint appEndDate, string data, address indexed applicant, address addressVersion);
   event _Challenge(bytes32 indexed listingAddress, uint indexed challengeID, string data, uint commitEndDate, uint revealEndDate, address indexed challenger);
   event _Deposit(bytes32 indexed listingAddress, uint added, uint newTotal, address indexed owner);
   event _Withdrawal(bytes32 indexed listingAddress, uint withdrew, uint newTotal, address indexed owner);
@@ -106,7 +106,7 @@ contract AddressRegistry {
 
     // Transfers tokens from user to Registry contract
     require(token.transferFrom(msg.sender, this, amount));
-    emit _Application(listingAddress, amount, listing.applicationExpiry, data, msg.sender);
+    emit _Application(listingAddress, amount, listing.applicationExpiry, data, msg.sender, address(listingAddress));
   }
 
   /**

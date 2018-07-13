@@ -12,6 +12,7 @@ export class Listing {
   private listingAddress: EthAddress;
 
   constructor(ethApi: EthApi, instance: CivilTCRContract, address: EthAddress) {
+    console.log("new listing: ", address);
     this.ethApi = ethApi;
     this.tcrInstance = instance;
     this.listingAddress = address;
