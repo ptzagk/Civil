@@ -1,7 +1,9 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.23;
 
-import "./RestrictedAddressRegistry.sol";
+import "../installed_contracts/Registry.sol";
 import "../interfaces/IGovernment.sol";
+import "../interfaces/ICivilPLCRVoting.sol";
+import "../interfaces/ICivilTCRHelper.sol";
 
 /**
 @title CivilTCR - Token Curated Registry with Appeallate Functionality and Restrictions on Application
@@ -12,16 +14,12 @@ overturn challenges if someone requests an appeal, and a process by which grante
 A Granted Appeal reverses the result of the challenge vote (including which parties are considered the winners & receive rewards).
 A successful Appeal Challenge reverses the result of the Granted Appeal (again, including the winners).
 */
-contract CivilTCR is RestrictedAddressRegistry {
-
+contract CivilTCR is Registry {
   event _AppealRequested(bytes32 indexed listingAddress, uint indexed challengeID, uint appealFeePaid, address requester);
   event _AppealGranted(bytes32 indexed listingAddress, uint indexed challengeID);
-  event _FailedChallengeOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
-  event _SuccessfulChallengeOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
-  event _GrantedAppealChallenged(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, string data);
-  event _GrantedAppealOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
-  event _GrantedAppealConfirmed(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
-  event _GovernmentTransfered(address newGovernment);
+  // event _GrantedAppealChallenged(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, string data);
+  //event _GrantedAppealOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
+  //event _GrantedAppealConfirmed(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
 
   modifier onlyGovernmentController {
     require(msg.sender == government.getGovernmentController());
@@ -37,8 +35,9 @@ contract CivilTCR is RestrictedAddressRegistry {
   }
 
   IGovernment public government;
-
-  /*
+  ICivilPLCRVoting public civilVoting;
+  ICivilTCRHelper public tcrHelper;
+/*
   @notice this struct handles the state of an appeal. It is first initialized
   when an appeal is requested
   */
@@ -56,21 +55,14 @@ contract CivilTCR is RestrictedAddressRegistry {
   mapping(uint => Appeal) public appeals; // map challengeID to appeal
 
   /**
-  @notice Contructor Sets the addresses for token, voting, parameterizer, appellate, and fee recipient
-  @dev passes tokenAddr, plcrAddr, paramsAddr up to RestrictedAddressRegistry constructor
-  @param tokenAddr Address of the TCR's intrinsic ERC20 token
-  @param plcrAddr Address of a PLCR voting contract for the provided token
-  @param paramsAddr Address of a Parameterizer contract
-  @param govtAddr Address of a IGovernment contract
+  @dev Initializer. Can only be called once.
+  @param _token The address where the ERC20 token contract is deployed
   */
-  function CivilTCR(
-    address tokenAddr,
-    address plcrAddr,
-    address paramsAddr,
-    address govtAddr
-  ) public RestrictedAddressRegistry(tokenAddr, plcrAddr, paramsAddr)
-  {
-    government = IGovernment(govtAddr);
+  function init2(address _token, address _voting, address _parameterizer, address _government, address _helper) public {
+      super.init(_token, _voting, _parameterizer, "CivilTCR");
+      government = IGovernment(_government);
+      civilVoting = ICivilPLCRVoting(_voting);
+      tcrHelper = ICivilTCRHelper(_helper);
   }
 
   // --------------------
@@ -95,15 +87,13 @@ contract CivilTCR is RestrictedAddressRegistry {
   */
   function requestAppeal(bytes32 listingAddress) external {
     Listing storage listing = listings[listingAddress];
-    require(voting.pollEnded(listing.challengeID));
-    require(challengeRequestAppealExpiries[listing.challengeID] > now); // "Request Appeal Phase" active
-    require(appeals[listing.challengeID].requester == 0);
+    require(tcrHelper.canRequestAppeal(listingAddress));
 
-    uint appealFee = government.get("appealFee");
+    uint appealFee = government.get("8");
     Appeal storage appeal = appeals[listing.challengeID];
     appeal.requester = msg.sender;
     appeal.appealFeePaid = appealFee;
-    appeal.appealPhaseExpiry = now + government.get("judgeAppealLen");
+    appeal.appealPhaseExpiry = now + government.get("7");
 
     require(token.transferFrom(msg.sender, this, appealFee));
     emit _AppealRequested(listingAddress, listing.challengeID, appealFee, msg.sender);
@@ -131,11 +121,10 @@ contract CivilTCR is RestrictedAddressRegistry {
   function grantAppeal(bytes32 listingAddress) external onlyAppellate {
     Listing storage listing = listings[listingAddress];
     Appeal storage appeal = appeals[listing.challengeID];
-    require(appeal.appealPhaseExpiry > now); // "Judge Appeal Phase" active
-    require(!appeal.appealGranted); // don't grant twice
+    require(appeal.appealPhaseExpiry > now && !appeal.appealGranted); // don't grant twice
 
     appeal.appealGranted = true;
-    appeal.appealOpenToChallengeExpiry = now + parameterizer.get("challengeAppealLen");
+    appeal.appealOpenToChallengeExpiry = now + parameterizer.get("6");
     emit _AppealGranted(listingAddress, listing.challengeID);
   }
 
@@ -148,9 +137,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   */
   function transferGovernment(address newAddress) external onlyGovernmentController {
     government = IGovernment(newAddress);
-    emit _GovernmentTransfered(newAddress);
   }
-
   // --------
   // ANY USER INTERFACE
   // ANYONE CAN CALL THESE FUNCTIONS FOR A LISTING
@@ -165,11 +152,11 @@ contract CivilTCR is RestrictedAddressRegistry {
   function updateStatus(bytes32 listingAddress) public {
     if (canBeWhitelisted(listingAddress)) {
       whitelistApplication(listingAddress);
-    } else if (challengeCanBeResolved(listingAddress)) {
+    } else if (tcrHelper.challengeCanBeResolved(listingAddress)) {
       resolveChallenge(listingAddress);
-    } else if (appealCanBeResolved(listingAddress)) {
+    } else if (tcrHelper.appealCanBeResolved(listingAddress)) {
       resolveAppeal(listingAddress);
-    } else if (appealChallengeCanBeResolved(listingAddress)) {
+    } else if (tcrHelper.appealChallengeCanBeResolved(listingAddress)) {
       resolveAppealChallenge(listingAddress);
     } else {
       revert();
@@ -216,7 +203,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   function challenge(bytes32 listingAddress, string data) public returns (uint challengeID) {
     uint id = super.challenge(listingAddress, data);
     if (id > 0) {
-      uint challengeLength = parameterizer.get("commitStageLen") + parameterizer.get("revealStageLen") + government.get("requestAppealLen");
+      uint challengeLength = parameterizer.get("4") + parameterizer.get("3") + government.get("5");
       challengeRequestAppealExpiries[id] = now + challengeLength;
     }
     return id;
@@ -242,17 +229,15 @@ contract CivilTCR is RestrictedAddressRegistry {
   @param data Extra data relevant to the appeal challenge. Think URLs.
   */
   function challengeGrantedAppeal(bytes32 listingAddress, string data) public returns (uint challengeID) {
-    Listing storage listing = listings[listingAddress];
+    Listing memory listing = listings[listingAddress];
     Appeal storage appeal = appeals[listing.challengeID];
-    uint pct = government.get("appealVotePercentage");
-    require(appeal.appealGranted);
-    require(appeal.appealChallengeID == 0);
-    require(appeal.appealOpenToChallengeExpiry > now);
+    uint pct = government.get("1");
+    require(appeal.appealGranted && appeal.appealChallengeID == 0 && appeal.appealOpenToChallengeExpiry > now);
 
     uint pollID = voting.startPoll(
       pct,
-      parameterizer.get("challengeAppealCommitLen"),
-      parameterizer.get("challengeAppealRevealLen")
+      parameterizer.get("2"),
+      parameterizer.get("3")
     );
 
     challenges[pollID] = Challenge({
@@ -266,10 +251,9 @@ contract CivilTCR is RestrictedAddressRegistry {
     appeal.appealChallengeID = pollID;
 
     require(token.transferFrom(msg.sender, this, appeal.appealFeePaid));
-    emit _GrantedAppealChallenged(listingAddress, listing.challengeID, pollID, data);
+    // emit _GrantedAppealChallenged(listingAddress, listing.challengeID, pollID, data);
     return pollID;
   }
-
 
   /**
   @notice Determines the winner in an appeal challenge. Rewards the winner tokens and
@@ -280,7 +264,7 @@ contract CivilTCR is RestrictedAddressRegistry {
   @param listingAddress The address of a listing with an appeal challenge that is to be resolved
   */
   function resolveAppealChallenge(bytes32 listingAddress) internal {
-    Listing storage listing = listings[listingAddress];
+    Listing memory listing = listings[listingAddress];
     uint challengeID = listings[listingAddress].challengeID;
     Appeal storage appeal = appeals[listing.challengeID];
     uint appealChallengeID = appeal.appealChallengeID;
@@ -300,27 +284,11 @@ contract CivilTCR is RestrictedAddressRegistry {
       super.resolveChallenge(listingAddress);
       appeal.overturned = true;
       require(token.transfer(appealChallenge.challenger, reward));
-      emit _GrantedAppealOverturned(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
+      // emit _GrantedAppealOverturned(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
     } else { // Case: appeal challenge failed, don't overturn appeal
       resolveOverturnedChallenge(listingAddress);
       require(token.transfer(appeal.requester, reward));
-      emit _GrantedAppealConfirmed(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
-    }
-  }
-
-  /**
-  @notice gets the number of tokens the voter staked on the winning side of the challenge,
-  or the losing side if the challenge has been overturned
-  @param voter The Voter to check
-  @param challengeID The PLCR pollID of the challenge to check
-  @param salt The salt of a voter's commit hash in the given poll
-  */
-  function getNumChallengeTokens(address voter, uint challengeID, uint salt) internal view returns (uint) {
-    bool overturned = appeals[challengeID].appealGranted && !appeals[challengeID].overturned;
-    if (overturned) {
-      return voting.getNumLosingTokens(voter, challengeID, salt);
-    } else {
-      return voting.getNumPassingTokens(voter, challengeID, salt);
+      // emit _GrantedAppealConfirmed(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
     }
   }
 
@@ -339,19 +307,12 @@ contract CivilTCR is RestrictedAddressRegistry {
     uint salt
   ) public view returns (uint)
   {
-    Challenge challenge = challenges[challengeID];
-    Appeal appeal = appeals[challengeID];
-    uint totalTokens = challenge.totalTokens;
-    uint rewardPool = challenge.rewardPool;
-    bool overturnOriginalResult = appeal.appealGranted && !appeal.overturned;
-    uint voterTokens = 0;
-    if (overturnOriginalResult) {
-      voterTokens = voting.getNumLosingTokens(voter, challengeID, salt);
-    } else {
-      voterTokens = voting.getNumPassingTokens(voter, challengeID, salt);
-    }
-    return (voterTokens * rewardPool) / totalTokens;
+    return tcrHelper.voterReward(voter, challengeID, salt);
   }
+
+  // function addRewardToListing(bytes32 listingAddress, uint reward) private {
+  //   listings[listingAddress].unstakedDeposit += reward;
+  // }
 
   /**
   @notice Updates the state of a listing after a challenge was overtuned via appeal (and no appeal
@@ -374,71 +335,21 @@ contract CivilTCR is RestrictedAddressRegistry {
 
     challenge.resolved = true;
     // Stores the total tokens used for voting by the losing side for reward purposes
-    challenge.totalTokens = voting.getTotalNumberOfTokensForLosingOption(challengeID);
+    challenge.totalTokens = civilVoting.getTotalNumberOfTokensForLosingOption(challengeID);
 
-    // challenge is overturned, behavior here is opposite resolveChallenge
+    // // challenge is overturned, behavior here is opposite resolveChallenge
     if (voting.isPassed(challengeID)) { // original vote passed (challenge success), this should whitelist listing
       whitelistApplication(listingAddress);
-      // Unlock stake so that it can be retrieved by the applicant
+    //   // Unlock stake so that it can be retrieved by the applicant
       listing.unstakedDeposit += reward;
 
-      emit _SuccessfulChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
+      // emit _SuccessfulChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
     } else { // original vote failed (challenge failed), this should de-list listing
       resetListing(listingAddress);
-      // Transfer the reward to the challenger
+    //   // Transfer the reward to the challenger
       require(token.transfer(challenge.challenger, reward));
 
-      emit _FailedChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
+    //   emit _FailedChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
     }
-  }
-
-  /**
-  @notice Determines whether a challenge can be resolved for a listing at given address. Throws if no challenge exists.
-  @param listingAddress An address for a listing to check
-  @return True if challenge exists, has not already been resolved, has not had appeal requested, and has passed the request
-  appeal expiry time. False otherwise.
-  */
-  function challengeCanBeResolved(bytes32 listingAddress) view public returns (bool canBeResolved) {
-    uint challengeID = listings[listingAddress].challengeID;
-    require(challengeExists(listingAddress));
-    if (challengeRequestAppealExpiries[challengeID] > now) {
-      return false;
-    }
-    return (appeals[challengeID].appealPhaseExpiry == 0);
-  }
-
-  /**
-  @notice Determines whether an appeal can be resolved for a listing at given address. Throws if no challenge exists.
-  @param listingAddress An address for a listing to check
-  @return True if challenge exists, has not already been resolved, has had appeal requested, and has either
-  (1) had an appeal granted and passed the appeal opten to challenge expiry OR (2) has not had an appeal granted and
-  has passed the appeal phase expiry. False otherwise.
-  */
-  function appealCanBeResolved(bytes32 listingAddress) view public returns (bool canBeResolved) {
-    uint challengeID = listings[listingAddress].challengeID;
-    Appeal appeal = appeals[challengeID];
-    require(challengeExists(listingAddress));
-    if (appeal.appealPhaseExpiry == 0) {
-      return false;
-    }
-    if (!appeal.appealGranted) {
-      return appeal.appealPhaseExpiry < now;
-    } else {
-      return appeal.appealOpenToChallengeExpiry < now && appeal.appealChallengeID == 0;
-    }
-  }
-
-  /**
-  @notice Determines whether an appeal challenge can be resolved for a listing at given address. Throws if no challenge exists.
-  @param listingAddress An address for a listing to check
-  @return True if appeal challenge exists, has not already been resolved, and the voting phase for the appeal challenge is ended. False otherwise.
-  */
-  function appealChallengeCanBeResolved(bytes32 listingAddress) view public returns (bool canBeResolved) {
-    uint challengeID = listings[listingAddress].challengeID;
-    Appeal appeal = appeals[challengeID];
-    if (appeal.appealChallengeID == 0) {
-      return false;
-    }
-    return voting.pollEnded(appeal.appealChallengeID);
   }
 }

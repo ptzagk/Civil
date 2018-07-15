@@ -1,8 +1,8 @@
 pragma solidity ^0.4.19;
 
-import "./AddressRegistry.sol";
+import "../installed_contracts/Registry.sol";
 
-contract ContractAddressRegistry is AddressRegistry {
+contract ContractAddressRegistry is Registry {
 
   modifier onlyContract(bytes32 _contractAddress) {
     uint size;
@@ -12,22 +12,6 @@ contract ContractAddressRegistry is AddressRegistry {
     }
     require(size > 0);
     _;
-  }
-
-  /**
-  @notice Contructor Sets the addresses for token, voting, and parameterizer
-  @dev passes tokenAddr, plcrAddr, paramsAddr up to AddressRegistry constructor
-  @param tokenAddr Address of the TCR's intrinsic ERC20 token
-  @param plcrAddr Address of a PLCR voting contract for the provided token
-  @param paramsAddr Address of a Parameterizer contract
-  */
-  function ContractAddressRegistry(
-    address tokenAddr,
-    address plcrAddr,
-    address paramsAddr)
-    public AddressRegistry(tokenAddr, plcrAddr, paramsAddr)
-  {
-
   }
 
   // --------------------

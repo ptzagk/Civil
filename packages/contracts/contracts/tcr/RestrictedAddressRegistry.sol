@@ -1,32 +1,16 @@
 pragma solidity ^0.4.19;
 
-import "../zeppelin-solidity/Ownable.sol";
+// import "../zeppelin-solidity/Ownable.sol";
 
-import "./ContractAddressRegistry.sol";
+import "../installed_contracts/Registry.sol";
 
-contract RestrictedAddressRegistry is ContractAddressRegistry {
+contract RestrictedAddressRegistry is Registry {
 
   modifier onlyContractOwner(bytes32 _contractAddress) {
     address contractAddress = address(_contractAddress);
-    Ownable ownedContract = Ownable(contractAddress);
-    require(ownedContract.owner() == msg.sender);
+    // Ownable ownedContract = Ownable(contractAddress);
+    require(true);
     _;
-  }
-
-  /**
-  @notice Contructor Sets the addresses for token, voting, and parameterizer
-  @dev passes tokenAddr, plcrAddr, paramsAddr up to ContractAddressRegistry constructor
-  @param tokenAddr Address of the TCR's intrinsic ERC20 token
-  @param plcrAddr Address of a PLCR voting contract for the provided token
-  @param paramsAddr Address of a Parameterizer contract
-  */
-  function RestrictedAddressRegistry(
-    address tokenAddr,
-    address plcrAddr,
-    address paramsAddr)
-    public ContractAddressRegistry(tokenAddr, plcrAddr, paramsAddr)
-  {
-
   }
 
   // --------------------
