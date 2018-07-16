@@ -15,9 +15,6 @@ module.exports = (deployer: any, network: string, accounts: string[]) => {
         from: accounts[5],
       });
       const version = "0x000000000000000000000000" + newsroom1.address.substring(2);
-      console.log("bytes32 version: ", version);
-      console.log("length: ", version.length);
-      console.log("length2: ", "0x6162636400000000000000000000000000000000000000000000000000000000".length);
       await civilTCR.apply(version, 100, "", { from: accounts[5] });
 
       const newsroom2 = await Newsroom.new("The Ultra News 2000", "https://fakecharter.com", web3.sha3(), {

@@ -22,6 +22,8 @@ contract CivilTCR is Registry {
   event _GrantedAppealConfirmed(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
   event _SuccessfulChallengeOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
   event _FailedChallengeOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
+  event _GovernmentTransfered(address newGovernmentAddr);
+  
   modifier onlyGovernmentController {
     require(msg.sender == government.getGovernmentController());
     _;
@@ -92,11 +94,11 @@ contract CivilTCR is Registry {
     Listing storage listing = listings[listingAddress];
     require(tcrHelper.canRequestAppeal(listingAddress));
 
-    uint appealFee = government.get("8");
+    uint appealFee = government.get("appealFee");
     Appeal storage appeal = appeals[listing.challengeID];
     appeal.requester = msg.sender;
     appeal.appealFeePaid = appealFee;
-    appeal.appealPhaseExpiry = now + government.get("7");
+    appeal.appealPhaseExpiry = now + government.get("judgeAppealLen");
 
     require(token.transferFrom(msg.sender, this, appealFee));
     emit _AppealRequested(listingAddress, listing.challengeID, appealFee, msg.sender);
@@ -127,7 +129,7 @@ contract CivilTCR is Registry {
     require(appeal.appealPhaseExpiry > now && !appeal.appealGranted); // don't grant twice
 
     appeal.appealGranted = true;
-    appeal.appealOpenToChallengeExpiry = now + parameterizer.get("6");
+    appeal.appealOpenToChallengeExpiry = now + parameterizer.get("challengeAppealLen");
     emit _AppealGranted(listingAddress, listing.challengeID);
   }
 
@@ -140,6 +142,7 @@ contract CivilTCR is Registry {
   */
   function transferGovernment(address newAddress) external onlyGovernmentController {
     government = IGovernment(newAddress);
+    _GovernmentTransfered(newAddress);
   }
   // --------
   // ANY USER INTERFACE
@@ -206,7 +209,7 @@ contract CivilTCR is Registry {
   function challenge(bytes32 listingAddress, string data) public returns (uint challengeID) {
     uint id = super.challenge(listingAddress, data);
     if (id > 0) {
-      uint challengeLength = parameterizer.get("4") + parameterizer.get("3") + government.get("5");
+      uint challengeLength = parameterizer.get("commitStageLen") + parameterizer.get("revealStageLen") + government.get("requestAppealLen");
       challengeRequestAppealExpiries[id] = now + challengeLength;
     }
     return id;
@@ -239,8 +242,8 @@ contract CivilTCR is Registry {
 
     uint pollID = voting.startPoll(
       pct,
-      parameterizer.get("2"),
-      parameterizer.get("3")
+      parameterizer.get("challengeAppealCommitLen"),
+      parameterizer.get("challengeAppealRevealLen")
     );
 
     challenges[pollID] = Challenge({
@@ -336,16 +339,16 @@ contract CivilTCR is Registry {
     // Stores the total tokens used for voting by the losing side for reward purposes
     challenge.totalTokens = civilVoting.getTotalNumberOfTokensForLosingOption(challengeID);
 
-    // // challenge is overturned, behavior here is opposite resolveChallenge
+    // challenge is overturned, behavior here is opposite resolveChallenge
     if (voting.isPassed(challengeID)) { // original vote passed (challenge success), this should whitelist listing
       whitelistApplication(listingAddress);
-    //   // Unlock stake so that it can be retrieved by the applicant
+      // Unlock stake so that it can be retrieved by the applicant
       listing.unstakedDeposit += reward;
 
       emit _SuccessfulChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
     } else { // original vote failed (challenge failed), this should de-list listing
       resetListing(listingAddress);
-    //   // Transfer the reward to the challenger
+      // Transfer the reward to the challenger
       require(token.transfer(challenge.challenger, reward));
 
       emit _FailedChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
