@@ -17,10 +17,11 @@ A successful Appeal Challenge reverses the result of the Granted Appeal (again, 
 contract CivilTCR is Registry {
   event _AppealRequested(bytes32 indexed listingAddress, uint indexed challengeID, uint appealFeePaid, address requester);
   event _AppealGranted(bytes32 indexed listingAddress, uint indexed challengeID);
-  // event _GrantedAppealChallenged(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, string data);
-  //event _GrantedAppealOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
-  //event _GrantedAppealConfirmed(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
-
+  event _GrantedAppealChallenged(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, string data);
+  event _GrantedAppealOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
+  event _GrantedAppealConfirmed(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
+  event _SuccessfulChallengeOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
+  event _FailedChallengeOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
   modifier onlyGovernmentController {
     require(msg.sender == government.getGovernmentController());
     _;
@@ -55,11 +56,13 @@ contract CivilTCR is Registry {
   mapping(uint => Appeal) public appeals; // map challengeID to appeal
 
   /**
-  @dev Initializer. Can only be called once.
+  @dev Initializer. Can only be called once. Has a different name than base class's init funciton since it has different parameter count
   @param _token The address where the ERC20 token contract is deployed
+  @param _voting The address where the PLCRVoting contract is deployed
+  @param _parameterizer The address where the Parameterizer contract is deployed
   */
-  function init2(address _token, address _voting, address _parameterizer, address _government, address _helper) public {
-      super.init(_token, _voting, _parameterizer, "CivilTCR");
+  function initTCR(address _token, address _voting, address _parameterizer, address _government, address _helper) public {
+      super.init(_token, _voting, _parameterizer);
       government = IGovernment(_government);
       civilVoting = ICivilPLCRVoting(_voting);
       tcrHelper = ICivilTCRHelper(_helper);
@@ -251,7 +254,7 @@ contract CivilTCR is Registry {
     appeal.appealChallengeID = pollID;
 
     require(token.transferFrom(msg.sender, this, appeal.appealFeePaid));
-    // emit _GrantedAppealChallenged(listingAddress, listing.challengeID, pollID, data);
+    emit _GrantedAppealChallenged(listingAddress, listing.challengeID, pollID, data);
     return pollID;
   }
 
@@ -284,11 +287,11 @@ contract CivilTCR is Registry {
       super.resolveChallenge(listingAddress);
       appeal.overturned = true;
       require(token.transfer(appealChallenge.challenger, reward));
-      // emit _GrantedAppealOverturned(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
+      emit _GrantedAppealOverturned(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
     } else { // Case: appeal challenge failed, don't overturn appeal
       resolveOverturnedChallenge(listingAddress);
       require(token.transfer(appeal.requester, reward));
-      // emit _GrantedAppealConfirmed(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
+      emit _GrantedAppealConfirmed(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
     }
   }
 
@@ -309,10 +312,6 @@ contract CivilTCR is Registry {
   {
     return tcrHelper.voterReward(voter, challengeID, salt);
   }
-
-  // function addRewardToListing(bytes32 listingAddress, uint reward) private {
-  //   listings[listingAddress].unstakedDeposit += reward;
-  // }
 
   /**
   @notice Updates the state of a listing after a challenge was overtuned via appeal (and no appeal
@@ -343,13 +342,13 @@ contract CivilTCR is Registry {
     //   // Unlock stake so that it can be retrieved by the applicant
       listing.unstakedDeposit += reward;
 
-      // emit _SuccessfulChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
+      emit _SuccessfulChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
     } else { // original vote failed (challenge failed), this should de-list listing
       resetListing(listingAddress);
     //   // Transfer the reward to the challenger
       require(token.transfer(challenge.challenger, reward));
 
-    //   emit _FailedChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
+      emit _FailedChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
     }
   }
 }

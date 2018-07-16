@@ -53,13 +53,12 @@ contract Registry {
     EIP20Interface public token;
     PLCRVoting public voting;
     Parameterizer public parameterizer;
-    string public name;
 
     /**
     @dev Initializer. Can only be called once.
     @param _token The address where the ERC20 token contract is deployed
     */
-    function init(address _token, address _voting, address _parameterizer, string _name) public {
+    function init(address _token, address _voting, address _parameterizer) public {
         require(_token != 0 && address(token) == 0);
         require(_voting != 0 && address(voting) == 0);
         require(_parameterizer != 0 && address(parameterizer) == 0);
@@ -67,7 +66,6 @@ contract Registry {
         token = EIP20Interface(_token);
         voting = PLCRVoting(_voting);
         parameterizer = Parameterizer(_parameterizer);
-        name = _name;
     }
 
     // --------------------
@@ -223,18 +221,6 @@ contract Registry {
             resolveChallenge(_listingHash);
         } else {
             revert();
-        }
-    }
-
-    /**
-    @dev                  Updates an array of listingHashes' status from 'application' to 'listing' or resolves
-                          a challenge if one exists.
-    @param _listingHashes The listingHashes whose status are being updated
-    */
-    function updateStatuses(bytes32[] _listingHashes) public {
-        // loop through arrays, revealing each individual vote values
-        for (uint i = 0; i < _listingHashes.length; i++) {
-            updateStatus(_listingHashes[i]);
         }
     }
 
