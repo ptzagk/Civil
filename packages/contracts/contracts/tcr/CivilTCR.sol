@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "../installed_contracts/Registry.sol";
+import "./RestricrtedAddressRegistry.sol";
 import "../interfaces/IGovernment.sol";
 import "../interfaces/ICivilPLCRVoting.sol";
 import "../interfaces/ICivilTCRHelper.sol";
@@ -14,12 +14,12 @@ overturn challenges if someone requests an appeal, and a process by which grante
 A Granted Appeal reverses the result of the challenge vote (including which parties are considered the winners & receive rewards).
 A successful Appeal Challenge reverses the result of the Granted Appeal (again, including the winners).
 */
-contract CivilTCR is Registry {
+contract CivilTCR is RestricrtedAddressRegistry {
   event _AppealRequested(bytes32 indexed listingAddress, uint indexed challengeID, uint appealFeePaid, address requester);
   event _AppealGranted(bytes32 indexed listingAddress, uint indexed challengeID);
-  // event _GrantedAppealChallenged(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, string data);
-  //event _GrantedAppealOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
-  //event _GrantedAppealConfirmed(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
+  event _GrantedAppealChallenged(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, string data);
+  event _GrantedAppealOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
+  event _GrantedAppealConfirmed(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
 
   modifier onlyGovernmentController {
     require(msg.sender == government.getGovernmentController());
@@ -251,7 +251,7 @@ contract CivilTCR is Registry {
     appeal.appealChallengeID = pollID;
 
     require(token.transferFrom(msg.sender, this, appeal.appealFeePaid));
-    // emit _GrantedAppealChallenged(listingAddress, listing.challengeID, pollID, data);
+    emit _GrantedAppealChallenged(listingAddress, listing.challengeID, pollID, data);
     return pollID;
   }
 
@@ -284,11 +284,11 @@ contract CivilTCR is Registry {
       super.resolveChallenge(listingAddress);
       appeal.overturned = true;
       require(token.transfer(appealChallenge.challenger, reward));
-      // emit _GrantedAppealOverturned(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
+      emit _GrantedAppealOverturned(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
     } else { // Case: appeal challenge failed, don't overturn appeal
       resolveOverturnedChallenge(listingAddress);
       require(token.transfer(appeal.requester, reward));
-      // emit _GrantedAppealConfirmed(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
+      emit _GrantedAppealConfirmed(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
     }
   }
 
@@ -309,10 +309,6 @@ contract CivilTCR is Registry {
   {
     return tcrHelper.voterReward(voter, challengeID, salt);
   }
-
-  // function addRewardToListing(bytes32 listingAddress, uint reward) private {
-  //   listings[listingAddress].unstakedDeposit += reward;
-  // }
 
   /**
   @notice Updates the state of a listing after a challenge was overtuned via appeal (and no appeal
@@ -337,19 +333,19 @@ contract CivilTCR is Registry {
     // Stores the total tokens used for voting by the losing side for reward purposes
     challenge.totalTokens = civilVoting.getTotalNumberOfTokensForLosingOption(challengeID);
 
-    // // challenge is overturned, behavior here is opposite resolveChallenge
+    // challenge is overturned, behavior here is opposite resolveChallenge
     if (voting.isPassed(challengeID)) { // original vote passed (challenge success), this should whitelist listing
       whitelistApplication(listingAddress);
-    //   // Unlock stake so that it can be retrieved by the applicant
+      // Unlock stake so that it can be retrieved by the applicant
       listing.unstakedDeposit += reward;
 
-      // emit _SuccessfulChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
+      emit _SuccessfulChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
     } else { // original vote failed (challenge failed), this should de-list listing
       resetListing(listingAddress);
-    //   // Transfer the reward to the challenger
+      // Transfer the reward to the challenger
       require(token.transfer(challenge.challenger, reward));
 
-    //   emit _FailedChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
+      emit _FailedChallengeOverturned(listingAddress, challengeID, challenge.rewardPool, challenge.totalTokens);
     }
   }
 }
