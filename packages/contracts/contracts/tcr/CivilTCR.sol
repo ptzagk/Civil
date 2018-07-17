@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "./RestricrtedAddressRegistry.sol";
+import "./RestrictedAddressRegistry.sol";
 import "../interfaces/IGovernment.sol";
 import "../interfaces/ICivilPLCRVoting.sol";
 import "../interfaces/ICivilTCRHelper.sol";
@@ -14,13 +14,15 @@ overturn challenges if someone requests an appeal, and a process by which grante
 A Granted Appeal reverses the result of the challenge vote (including which parties are considered the winners & receive rewards).
 A successful Appeal Challenge reverses the result of the Granted Appeal (again, including the winners).
 */
-contract CivilTCR is RestricrtedAddressRegistry {
+contract CivilTCR is RestrictedAddressRegistry {
   event _AppealRequested(bytes32 indexed listingAddress, uint indexed challengeID, uint appealFeePaid, address requester);
   event _AppealGranted(bytes32 indexed listingAddress, uint indexed challengeID);
   event _GrantedAppealChallenged(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, string data);
   event _GrantedAppealOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
   event _GrantedAppealConfirmed(bytes32 indexed listingAddress, uint indexed challengeID, uint indexed appealChallengeID, uint rewardPool, uint totalTokens);
-
+  event _SuccessfulChallengeOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
+  event _FailedChallengeOverturned(bytes32 indexed listingAddress, uint indexed challengeID, uint rewardPool, uint totalTokens);
+  
   modifier onlyGovernmentController {
     require(msg.sender == government.getGovernmentController());
     _;
@@ -89,11 +91,11 @@ contract CivilTCR is RestricrtedAddressRegistry {
     Listing storage listing = listings[listingAddress];
     require(tcrHelper.canRequestAppeal(listingAddress));
 
-    uint appealFee = government.get("8");
+    uint appealFee = government.get("appealFee");
     Appeal storage appeal = appeals[listing.challengeID];
     appeal.requester = msg.sender;
     appeal.appealFeePaid = appealFee;
-    appeal.appealPhaseExpiry = now + government.get("7");
+    appeal.appealPhaseExpiry = now + government.get("judgeAppealLen");
 
     require(token.transferFrom(msg.sender, this, appealFee));
     emit _AppealRequested(listingAddress, listing.challengeID, appealFee, msg.sender);
@@ -124,7 +126,7 @@ contract CivilTCR is RestricrtedAddressRegistry {
     require(appeal.appealPhaseExpiry > now && !appeal.appealGranted); // don't grant twice
 
     appeal.appealGranted = true;
-    appeal.appealOpenToChallengeExpiry = now + parameterizer.get("6");
+    appeal.appealOpenToChallengeExpiry = now + parameterizer.get("challengeAppealLen");
     emit _AppealGranted(listingAddress, listing.challengeID);
   }
 
@@ -203,7 +205,7 @@ contract CivilTCR is RestricrtedAddressRegistry {
   function challenge(bytes32 listingAddress, string data) public returns (uint challengeID) {
     uint id = super.challenge(listingAddress, data);
     if (id > 0) {
-      uint challengeLength = parameterizer.get("4") + parameterizer.get("3") + government.get("5");
+      uint challengeLength = parameterizer.get("commitStageLen") + parameterizer.get("revealStageLen") + government.get("requestAppealLen");
       challengeRequestAppealExpiries[id] = now + challengeLength;
     }
     return id;
@@ -236,8 +238,8 @@ contract CivilTCR is RestricrtedAddressRegistry {
 
     uint pollID = voting.startPoll(
       pct,
-      parameterizer.get("2"),
-      parameterizer.get("3")
+      parameterizer.get("challengeAppealCommitLen"),
+      parameterizer.get("challengeAppealRevealLen")
     );
 
     challenges[pollID] = Challenge({
@@ -289,6 +291,22 @@ contract CivilTCR is RestricrtedAddressRegistry {
       resolveOverturnedChallenge(listingAddress);
       require(token.transfer(appeal.requester, reward));
       emit _GrantedAppealConfirmed(listingAddress, challengeID, appealChallengeID, appealChallenge.rewardPool, appealChallenge.totalTokens);
+    }
+  }
+
+  /**
+  @notice gets the number of tokens the voter staked on the winning side of the challenge,
+  or the losing side if the challenge has been overturned
+  @param voter The Voter to check
+  @param challengeID The PLCR pollID of the challenge to check
+  @param salt The salt of a voter's commit hash in the given poll
+  */
+  function getNumChallengeTokens(address voter, uint challengeID, uint salt) internal view returns (uint) {
+    bool overturned = appeals[challengeID].appealGranted && !appeals[challengeID].overturned;
+    if (overturned) {
+      return civilVoting.getNumLosingTokens(voter, challengeID, salt);
+    } else {
+      return voting.getNumPassingTokens(voter, challengeID, salt);
     }
   }
 
