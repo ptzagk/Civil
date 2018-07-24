@@ -1,4 +1,4 @@
-import * as store from "store";
+import store from "store";
 import { randomSalt } from "@joincivil/utils";
 import { BigNumber } from "bignumber.js";
 import { EthAddress } from "@joincivil/core";

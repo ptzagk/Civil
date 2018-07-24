@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 
 import ChallengeDetailContainer from "./ChallengeDetail";
 import { PageView } from "../utility/ViewModules";

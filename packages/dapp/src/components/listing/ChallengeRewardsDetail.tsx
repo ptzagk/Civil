@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { TransactionButton } from "@joincivil/components";
 import { InputElement, StyledFormContainer, FormGroup } from "../utility/FormElements";
 import {

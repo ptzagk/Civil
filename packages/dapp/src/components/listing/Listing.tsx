@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { EthAddress, ListingWrapper } from "@joincivil/core";
 import { NewsroomState } from "@joincivil/newsroom-manager";

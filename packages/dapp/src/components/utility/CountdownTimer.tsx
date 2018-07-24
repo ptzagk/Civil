@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { getReadableDuration } from "@joincivil/utils";
 
 export interface CountdownTimerProps {

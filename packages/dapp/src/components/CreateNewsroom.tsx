@@ -1,6 +1,6 @@
 import { EthAddress } from "@joincivil/core";
 import { Newsroom } from "@joincivil/newsroom-manager";
-import * as React from "react";
+import React from "react";
 import { getCivil } from "../helpers/civilInstance";
 import { PageView, ViewModule } from "./utility/ViewModules";
 

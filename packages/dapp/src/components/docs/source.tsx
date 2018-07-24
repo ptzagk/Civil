@@ -1,6 +1,6 @@
-import * as React from "react";
+import React from "react";
 
-import * as hljs from "highlight.js";
+import hljs from "highlight.js";
 // import hljsDefineSolidity from "highlightjs-solidity"
 // import "../css/hljs-atom-one.css"
 

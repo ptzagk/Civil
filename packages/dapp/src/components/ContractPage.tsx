@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import Contract from "./docs/contract";
 
 export interface ContractPageState {

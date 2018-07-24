@@ -1,7 +1,7 @@
 import { ListingDetailHeader, ListingDetailHeaderProps } from "@joincivil/components";
 import { EthAddress, ListingWrapper, NewsroomWrapper } from "@joincivil/core";
 import { getFormattedTokenBalance } from "@joincivil/utils";
-import * as React from "react";
+import React from "react";
 
 export interface ListingDetailProps {
   newsroom: NewsroomWrapper;

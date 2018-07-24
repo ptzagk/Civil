@@ -1,5 +1,5 @@
-import * as React from "react";
-import * as sortBy from "sort-by";
+import React from "react";
+import sortBy from "sort-by";
 import Method from "./method";
 
 export interface MethodsProps {

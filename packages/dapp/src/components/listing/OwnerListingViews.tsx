@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { EthAddress, ListingWrapper, TwoStepEthTransaction } from "@joincivil/core";
 import { approve, depositTokens, exitListing, withdrawTokens } from "../../apis/civilTCR";
 import { InputElement, StyledFormContainer, FormGroup, FormValidationMessage } from "../utility/FormElements";

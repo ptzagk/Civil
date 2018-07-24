@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { Divider, Header, Menu, Message } from "semantic-ui-react";
 import Abi from "./abi";
 import Bytecode from "./bytecode";

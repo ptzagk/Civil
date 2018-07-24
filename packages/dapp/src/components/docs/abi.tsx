@@ -1,5 +1,5 @@
-import * as React from "react";
-import * as hljs from "highlight.js";
+import React from "react";
+import hljs from "highlight.js";
 
 export interface AbiPropTypes {
   contract: any;

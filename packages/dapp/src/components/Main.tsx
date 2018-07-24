@@ -1,7 +1,7 @@
 import { Civil, EthAddress } from "@joincivil/core";
 import { CivilErrors } from "@joincivil/utils";
 import BigNumber from "bignumber.js";
-import * as React from "react";
+import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import { setNetwork } from "../actionCreators/network";

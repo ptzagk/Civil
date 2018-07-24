@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { CivilEditor, valueJson, plugins } from "@joincivil/editor";
 import styled from "styled-components";
 import { getCivil } from "../helpers/civilInstance";

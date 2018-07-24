@@ -1,6 +1,6 @@
-import * as React from "react";
+import React from "react";
 import { Input, Table, Segment, Label, Header } from "semantic-ui-react";
-import * as ReactMarkdown from "react-markdown";
+import ReactMarkdown from "react-markdown";
 
 export interface MethodProps {
   method: any;

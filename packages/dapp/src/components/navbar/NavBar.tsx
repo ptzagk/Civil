@@ -1,5 +1,5 @@
 import { getFormattedTokenBalance } from "@joincivil/utils";
-import * as React from "react";
+import React from "react";
 import { connect } from "react-redux";
 import styled from "styled-components";
 import { State } from "../../reducers";

@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { Set } from "immutable";
 import { ChallengeListingListItem, ListingListItem } from "./ListingListItem";
 import { StyledListingSummaryList } from "@joincivil/components";

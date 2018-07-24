@@ -3,7 +3,7 @@ import { Civil, NewsroomRoles, TwoStepEthTransaction } from "@joincivil/core";
 import { CivilErrors } from "@joincivil/utils";
 import BigNumber from "bignumber.js";
 import { List } from "immutable";
-import * as React from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import RichTextEditor from "react-rte";
 import { Subscription } from "rxjs";

@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import styled from "styled-components";
 import { NewsroomWrapper } from "@joincivil/core";
 import { SectionHeader } from "./ListItemStyle";

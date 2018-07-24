@@ -1,21 +1,21 @@
-import * as ACL from "./json/ACL.json";
-import * as AddressRegistry from "./json/AddressRegistry.json";
-import * as AtrributeStore from "./json/AttributeStore.json";
-import * as CivilTCR from "./json/CivilTCR.json";
-import * as ContractAddressRegistry from "./json/ContractAddressRegistry.json";
-import * as DLL from "./json/DLL.json";
-import * as DummyACL from "./json/DummyACL.json";
-import * as EIP20Interface from "./json/EIP20Interface.json";
-import * as Factory from "./json/Factory.json";
-import * as IMultiSigWalletFactory from "./json/IMultiSigWalletFactory.json";
-import * as MultiSigWallet from "./json/MultiSigWallet.json";
-import * as MultiSigWalletFactory from "./json/MultiSigWalletFactory.json";
-import * as Newsroom from ".//json/Newsroom.json";
-import * as NewsroomFactory from "./json/NewsroomFactory.json";
-import * as Ownable from "./json/Ownable.json";
-import * as Parameterizer from "./json/Parameterizer.json";
-import * as PLCRVoting from "./json/PLCRVoting.json";
-import * as RestrictedAddressRegistry from "./json/RestrictedAddressRegistry.json";
+import Newsroom from ".//json/Newsroom.json";
+import ACL from "./json/ACL.json";
+import AddressRegistry from "./json/AddressRegistry.json";
+import AtrributeStore from "./json/AttributeStore.json";
+import CivilTCR from "./json/CivilTCR.json";
+import ContractAddressRegistry from "./json/ContractAddressRegistry.json";
+import DLL from "./json/DLL.json";
+import DummyACL from "./json/DummyACL.json";
+import EIP20Interface from "./json/EIP20Interface.json";
+import Factory from "./json/Factory.json";
+import IMultiSigWalletFactory from "./json/IMultiSigWalletFactory.json";
+import MultiSigWallet from "./json/MultiSigWallet.json";
+import MultiSigWalletFactory from "./json/MultiSigWalletFactory.json";
+import NewsroomFactory from "./json/NewsroomFactory.json";
+import Ownable from "./json/Ownable.json";
+import Parameterizer from "./json/Parameterizer.json";
+import PLCRVoting from "./json/PLCRVoting.json";
+import RestrictedAddressRegistry from "./json/RestrictedAddressRegistry.json";
 
 const contracts = [
   ACL,

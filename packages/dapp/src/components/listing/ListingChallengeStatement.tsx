@@ -1,6 +1,6 @@
-import * as React from "react";
+import React from "react";
 import { connect } from "react-redux";
-import * as sanitizeHtml from "sanitize-html";
+import sanitizeHtml from "sanitize-html";
 import styled from "styled-components";
 import { State } from "../../reducers";
 import { ListingTabHeading } from "./styledComponents";

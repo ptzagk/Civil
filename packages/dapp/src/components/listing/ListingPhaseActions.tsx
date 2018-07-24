@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { approveForChallenge, challengeListing, updateStatus } from "../../apis/civilTCR";
 import { ListingWrapper, TwoStepEthTransaction } from "@joincivil/core";
 import ChallengeDetailContainer, { ChallengeResolve } from "./ChallengeDetail";
