@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js";
-import * as Debug from "debug";
+import Debug from "debug";
 import { Observable } from "rxjs/Observable";
-import * as Web3 from "web3";
+import Web3 from "web3";
 import { EthAddress } from "../../typescript-types/build";
 import { CivilErrors, isDefined } from "../../utils/build/src";
 import { EthApi } from "./ethapi";

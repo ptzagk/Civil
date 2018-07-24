@@ -1,10 +1,10 @@
 import { CivilErrors, delay, hashPersonalMessage, isBigNumber, promisify } from "@joincivil/utils";
 import BigNumber from "bignumber.js";
-import * as Debug from "debug";
+import Debug from "debug";
 import { bufferToHex, fromRpcSig, fromUtf8, toBuffer } from "ethereumjs-util";
 import { Observable } from "rxjs/Observable";
 import { ReplaySubject } from "rxjs/ReplaySubject";
-import * as Web3 from "web3";
+import Web3 from "web3";
 import {
   DecodedTransactionReceipt,
   EthAddress,

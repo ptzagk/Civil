@@ -10,7 +10,7 @@ import {
   recoverSigner,
 } from "@joincivil/utils";
 import BigNumber from "bignumber.js";
-import * as Debug from "debug";
+import Debug from "debug";
 import { Observable } from "rxjs";
 import { TransactionReceipt } from "web3";
 import { ContentProvider } from "../content/contentprovider";

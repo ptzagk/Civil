@@ -1,10 +1,10 @@
 /*
  * This file is auto-generated using generate-artifacts script. Any changes will be reverted
  */
-import * as Web3 from "web3";
+import Web3 from "web3";
 
 {{#each files}}
-import * as {{capitalize this.name}}Artifact from "../../artifacts/{{capitalize this.name}}.json";
+import {{capitalize this.name}}Artifact from "../../artifacts/{{capitalize this.name}}.json";
 {{/each}}
 
 export interface Artifact {

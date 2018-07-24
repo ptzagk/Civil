@@ -9,9 +9,9 @@
 
 import BigNumber from "bignumber.js";
 import { isUndefined, padStart, startsWith } from "lodash";
-import * as Web3 from "web3";
+import Web3 from "web3";
 // TODO(ritave): Use ethereumjs-abi
-import * as SolidityCoder from "web3/lib/solidity/coder";
+import SolidityCoder from "web3/lib/solidity/coder";
 import { AbiType, DecodedLogEntry, SolidityTypes } from "../../typescript-types/build";
 
 const HEX_START = "0x";

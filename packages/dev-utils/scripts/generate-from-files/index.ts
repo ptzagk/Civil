@@ -1,10 +1,9 @@
-import * as Debug from "debug";
-import * as fs from "fs";
-import * as glob from "glob";
-import * as Handlebars from "handlebars";
-import * as mkdirp from "mkdirp";
-import * as path from "path";
-
+import Debug from "debug";
+import fs from "fs";
+import glob from "glob";
+import Handlebars from "handlebars";
+import mkdirp from "mkdirp";
+import path from "path";
 import { ContextData, helpers } from "./utils";
 
 const debug = Debug("generate-from-files");

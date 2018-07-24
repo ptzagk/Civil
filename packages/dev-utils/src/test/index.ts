@@ -1,8 +1,8 @@
-import * as chaiAsPromised from "chai-as-promised";
-import * as chaiBignumber from "chai-bignumber";
-import * as dirtyChai from "dirty-chai";
-import * as Web3 from "web3";
 import { DecodedLogEntry } from "@joincivil/typescript-types";
+import chaiAsPromised from "chai-as-promised";
+import chaiBignumber from "chai-bignumber";
+import dirtyChai from "dirty-chai";
+import Web3 from "web3";
 
 export function configureChai(chai: any): void {
   chai.config.includeStack = true;

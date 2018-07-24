@@ -1,7 +1,7 @@
 import { EthApi, requireAccount } from "@joincivil/ethapi";
 import { CivilErrors } from "@joincivil/utils";
 import BigNumber from "bignumber.js";
-import * as Debug from "debug";
+import Debug from "debug";
 import { Observable } from "rxjs";
 import { Bytes32, EthAddress, PollData, TwoStepEthTransaction } from "../../types";
 import { BaseWrapper } from "../basewrapper";

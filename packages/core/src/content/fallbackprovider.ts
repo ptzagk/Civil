@@ -1,4 +1,4 @@
-import * as Debug from "debug";
+import Debug from "debug";
 
 import { ContentProvider, ContentProviderOptions, ContentProviderCreator } from "./contentprovider";
 import { StorageHeader, ContentData } from "../types";

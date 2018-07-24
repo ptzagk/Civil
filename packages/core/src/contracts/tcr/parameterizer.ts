@@ -1,6 +1,6 @@
 import BigNumber from "bignumber.js";
 import { Observable } from "rxjs";
-import * as Debug from "debug";
+import Debug from "debug";
 import { CivilErrors} from "@joincivil/utils";
 
 import { Bytes32, EthAddress, TwoStepEthTransaction, ParamProposalState, ParamProp, PollID } from "../../types";

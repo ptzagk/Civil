@@ -1,4 +1,4 @@
-// import * as process from "process";
+// import process from "process";
 
 // import { Civil } from "../../src";
 // import { NewsroomRoles } from "../../src/types";

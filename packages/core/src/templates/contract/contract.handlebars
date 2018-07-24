@@ -9,9 +9,9 @@ import { Observable } from "rxjs";
 import { DecodedLogEntryEvent, DecodedLogEntry, DecodedTransactionReceipt } from "@joincivil/typescript-types";
 // tslint:enable:no-unused-variable
 import "rxjs/add/operator/distinctUntilChanged";
-import * as Web3 from "web3";
+import Web3 from "web3";
 import { bindNestedAll, promisify, isDefined, CivilErrors } from "@joincivil/utils";
-import * as Debug from "debug";
+import Debug from "debug";
 
 import { EthAddress, TxData, TxDataAll, TxHash } from "../../../types";
 import { streamifyEvent } from "../../../contracts/utils/contracts";

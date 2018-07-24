@@ -2,7 +2,7 @@ import { EthApi } from "@joincivil/ethapi";
 import { DecodedLogEntry, DecodedLogEntryEvent } from "@joincivil/typescript-types";
 import { isDefined, isDeployedBytecodeEqual } from "@joincivil/utils";
 import { Observable } from "rxjs/Observable";
-import * as Web3 from "web3";
+import Web3 from "web3";
 import { CivilTransactionReceipt, EthAddress, TwoStepEthTransaction, TxDataBase, TxHash } from "../../types";
 import { artifacts } from "../generated/artifacts";
 import { Contract } from "../interfaces/contract";

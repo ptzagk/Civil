@@ -1,8 +1,8 @@
 import { currentAccount, EthApi } from "@joincivil/ethapi";
 import { TxData } from "@joincivil/typescript-types";
-import * as process from "process";
+import process from "process";
 import "rxjs/add/operator/distinctUntilChanged";
-import * as Web3 from "web3";
+import Web3 from "web3";
 import { Artifact, artifacts } from "../../../src/contracts/generated/artifacts";
 import { NewsroomContract } from "../../../src/contracts/generated/wrappers/newsroom";
 

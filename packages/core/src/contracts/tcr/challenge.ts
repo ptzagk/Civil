@@ -1,7 +1,7 @@
 import { EthApi } from "@joincivil/ethapi";
 import "@joincivil/utils";
 import BigNumber from "bignumber.js";
-import * as Debug from "debug";
+import Debug from "debug";
 import { ContentProvider } from "../../content/contentprovider";
 import { ChallengeData, ContentData, EthAddress } from "../../types";
 import { CivilTCRContract } from "../generated/wrappers/civil_t_c_r";

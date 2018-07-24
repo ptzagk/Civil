@@ -1,11 +1,6 @@
 declare module "bn.js";
 declare module "ipfs-api";
 
-declare module "*.json" {
-  const json: any;
-  export default json;
-}
-
 //////////////////////
 // Test definitions //
 //////////////////////

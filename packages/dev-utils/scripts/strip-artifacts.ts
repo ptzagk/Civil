@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import * as fs from "fs";
-import * as glob from "glob";
-import * as mkdirp from "mkdirp";
-import * as path from "path";
+import fs from "fs";
+import glob from "glob";
+import mkdirp from "mkdirp";
+import path from "path";
 
 /*
  * Artifacts in the newest version of Truffle have a lot of data we don't need nor want in our library
