@@ -15,7 +15,7 @@ import {
   StyledDashboardSubTab,
   TransactionButton,
 } from "@joincivil/components";
-import { multiClaimRewards } from "../../apis/civilTCR";
+import { multiClaimRewards, rescueTokensInMultiplePolls } from "../../apis/civilTCR";
 import { State } from "../../reducers";
 import {
   makeGetUserChallengesWithUnclaimedRewards,
@@ -35,11 +35,12 @@ export interface DashboardActivityProps {
 }
 
 export interface ChallengesToProcess {
-  [index: string]: [boolean, BigNumber];
+  [index: string]: [boolean, BigNumber | undefined];
 }
 
 export interface DashboardActivityState {
   challengesToClaim: ChallengesToProcess;
+  challengesToRescue: ChallengesToProcess;
 }
 
 const StyledTabsComponent = styled.div`
@@ -58,6 +59,7 @@ class DashboardActivity extends React.Component<DashboardActivityProps, Dashboar
     super(props);
     this.state = {
       challengesToClaim: {},
+      challengesToRescue: {},
     };
   }
 
@@ -115,7 +117,18 @@ class DashboardActivity extends React.Component<DashboardActivityProps, Dashboar
           </>
         </Tab>
         <Tab title={rescueTokensTabTitle}>
-          <ActivityList challenges={userChallengesWithRescueTokens} />
+          <>
+            <ActivityList
+              challenges={userChallengesWithRescueTokens}
+              resolvedChallenges={true}
+              toggleChallengeSelect={this.setChallengesToMultiRescue}
+            />
+            <StyledBatchButtonContainer>
+              <TransactionButton transactions={[{ transaction: this.rescueTokensInMultiplePolls }]}>
+                Rescue Tokens
+              </TransactionButton>
+            </StyledBatchButtonContainer>
+          </>
         </Tab>
       </Tabs>
     );
@@ -131,6 +144,12 @@ class DashboardActivity extends React.Component<DashboardActivityProps, Dashboar
     }));
   };
 
+  private setChallengesToMultiRescue = (challengeID: string, isSelected: boolean, salt?: BigNumber): void => {
+    this.setState(() => ({
+      challengesToRescue: { ...this.state.challengesToRescue, [challengeID]: [isSelected, salt] },
+    }));
+  };
+
   private resetMultiClaimRescue = (): void => {
     this.setState(() => ({ challengesToClaim: {} }));
   };
@@ -141,6 +160,11 @@ class DashboardActivity extends React.Component<DashboardActivityProps, Dashboar
     return multiClaimRewards(challengeIDs, salts);
   };
 
+  private rescueTokensInMultiplePolls = async (): Promise<TwoStepEthTransaction | void> => {
+    const challengeIDs = this.getChallengesToProcess(this.state.challengesToRescue);
+    return rescueTokensInMultiplePolls(challengeIDs);
+  };
+
   // We're storing which challenges to multi-claim in the state of this component, because
   // the user can select which rewards to batch
   // @TODO(jon: Clean this up. Maybe this gets put into redux, or we create a more
@@ -149,7 +173,7 @@ class DashboardActivity extends React.Component<DashboardActivityProps, Dashboar
   private getChallengesToProcess = (challengeObj: ChallengesToProcess): BigNumber[] => {
     const challengesToCheck = Object.entries(challengeObj);
     const challengesToProcess: BigNumber[] = challengesToCheck
-      .map((challengeToProcess: [string, [boolean, BigNumber]]) => {
+      .map((challengeToProcess: [string, [boolean, BigNumber | undefined]]) => {
         if (challengeToProcess[1][0]) {
           return new BigNumber(challengeToProcess[0]);
         }
@@ -162,7 +186,7 @@ class DashboardActivity extends React.Component<DashboardActivityProps, Dashboar
   private getSalts = (challengeObj: ChallengesToProcess): BigNumber[] => {
     const challengesToCheck = Object.entries(challengeObj);
     const challengesToProcess: BigNumber[] = challengesToCheck
-      .map((challengeToProcess: [string, [boolean, BigNumber]]) => {
+      .map((challengeToProcess: [string, [boolean, BigNumber | undefined]]) => {
         if (challengeToProcess[1][0]) {
           return challengeToProcess[1][1];
         }
