@@ -41,7 +41,7 @@ contract("Registry with Appeals", accounts => {
       await voting.revealVote(pollID, "0", "420", { from: voterAlice });
       await utils.advanceEvmTime(utils.paramConfig.revealStageLength + 1);
 
-      await registry.requestAppeal(newsroomAddress, { from: voterBob });
+      await registry.requestAppeal(newsroomAddress, "", { from: voterBob });
       await registry.grantAppeal(newsroomAddress, { from: JAB });
       const appealChallengePollID = await utils.challengeAppealAndGetPollID(newsroomAddress, challenger, registry);
 
@@ -68,7 +68,7 @@ contract("Registry with Appeals", accounts => {
       await voting.revealVote(pollID, "0", "420", { from: voterAlice });
       await utils.advanceEvmTime(utils.paramConfig.revealStageLength + 1);
 
-      await registry.requestAppeal(newsroomAddress, { from: voterBob });
+      await registry.requestAppeal(newsroomAddress, "", { from: voterBob });
       await registry.grantAppeal(newsroomAddress, { from: JAB });
       const appealChallengePollID = await utils.challengeAppealAndGetPollID(newsroomAddress, challenger, registry);
 
@@ -105,7 +105,7 @@ contract("Registry with Appeals", accounts => {
       await voting.revealVote(pollID, "0", "123", { from: voterBob });
       await utils.advanceEvmTime(utils.paramConfig.revealStageLength + 1);
 
-      await registry.requestAppeal(newsroomAddress, { from: voterBob });
+      await registry.requestAppeal(newsroomAddress, "", { from: voterBob });
       await registry.grantAppeal(newsroomAddress, { from: JAB });
       const appealChallengePollID = await utils.challengeAppealAndGetPollID(newsroomAddress, challenger, registry);
 

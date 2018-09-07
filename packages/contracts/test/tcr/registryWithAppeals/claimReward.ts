@@ -197,7 +197,7 @@ contract("Registry with Appeals", accounts => {
       await voting.revealVote(pollID, "0", "42  ", { from: voterAlice });
       await utils.advanceEvmTime(utils.paramConfig.revealStageLength + 1);
 
-      await registry.requestAppeal(newsroomAddress, { from: applicant });
+      await registry.requestAppeal(newsroomAddress, "", { from: applicant });
       await registry.grantAppeal(newsroomAddress, { from: JAB });
       const waitTime = utils.paramConfig.challengeAppealLength + 1;
       await utils.advanceEvmTime(waitTime);
@@ -230,7 +230,7 @@ contract("Registry with Appeals", accounts => {
       await voting.revealVote(pollID, "1", "32  ", { from: voterBob });
       await utils.advanceEvmTime(utils.paramConfig.revealStageLength + 1);
 
-      await registry.requestAppeal(newsroomAddress, { from: applicant });
+      await registry.requestAppeal(newsroomAddress, "", { from: applicant });
       await registry.grantAppeal(newsroomAddress, { from: JAB });
 
       const waitTime = utils.paramConfig.challengeAppealLength;

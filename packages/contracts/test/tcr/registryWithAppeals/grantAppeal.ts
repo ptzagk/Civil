@@ -111,7 +111,7 @@ contract("Registry With Appeals", accounts => {
         await registry.challenge(newsroomAddress, "", { from: challenger });
         await utils.advanceEvmTime(utils.paramConfig.commitStageLength);
         await utils.advanceEvmTime(utils.paramConfig.revealStageLength + 1);
-        await registry.requestAppeal(newsroomAddress, { from: applicant });
+        await registry.requestAppeal(newsroomAddress, "", { from: applicant });
         await expect(registry.grantAppeal(newsroomAddress, { from: JAB })).to.eventually.be.fulfilled(
           "Should not have allowed appeal on application with failed challenge that has been processed",
         );
@@ -122,7 +122,7 @@ contract("Registry With Appeals", accounts => {
         await registry.challenge(newsroomAddress, "", { from: challenger });
         await utils.advanceEvmTime(utils.paramConfig.commitStageLength);
         await utils.advanceEvmTime(utils.paramConfig.revealStageLength + 1);
-        await registry.requestAppeal(newsroomAddress, { from: applicant });
+        await registry.requestAppeal(newsroomAddress, "", { from: applicant });
         await expect(registry.grantAppeal(newsroomAddress, { from: applicant })).to.eventually.be.rejectedWith(
           REVERTED,
           "Should not have allowed grant appeal if not granted from appellate",
@@ -134,7 +134,7 @@ contract("Registry With Appeals", accounts => {
         await registry.challenge(newsroomAddress, "", { from: challenger });
         await utils.advanceEvmTime(utils.paramConfig.commitStageLength);
         await utils.advanceEvmTime(utils.paramConfig.revealStageLength + 1);
-        await registry.requestAppeal(newsroomAddress, { from: applicant });
+        await registry.requestAppeal(newsroomAddress, "", { from: applicant });
         await registry.grantAppeal(newsroomAddress, { from: JAB });
         await expect(registry.grantAppeal(newsroomAddress, { from: JAB })).to.eventually.be.rejectedWith(
           REVERTED,

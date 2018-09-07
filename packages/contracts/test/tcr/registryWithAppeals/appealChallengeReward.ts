@@ -32,7 +32,7 @@ contract("Registry With Appeals", accounts => {
       await registry.challenge(newsroomAddress, "", { from: challenger });
       await utils.advanceEvmTime(utils.paramConfig.commitStageLength);
       await utils.advanceEvmTime(utils.paramConfig.revealStageLength + 1);
-      await registry.requestAppeal(newsroomAddress, { from: applicant });
+      await registry.requestAppeal(newsroomAddress, "", { from: applicant });
       await registry.grantAppeal(newsroomAddress, { from: JAB });
 
       const pollID = await utils.challengeAppealAndGetPollID(newsroomAddress, challenger, registry);
@@ -50,7 +50,7 @@ contract("Registry With Appeals", accounts => {
       await registry.challenge(newsroomAddress, "", { from: challenger });
       await utils.advanceEvmTime(utils.paramConfig.commitStageLength);
       await utils.advanceEvmTime(utils.paramConfig.revealStageLength + 1);
-      await registry.requestAppeal(newsroomAddress, { from: applicant });
+      await registry.requestAppeal(newsroomAddress, "", { from: applicant });
       await registry.grantAppeal(newsroomAddress, { from: JAB });
 
       const pollID = await utils.challengeAppealAndGetPollID(newsroomAddress, challenger, registry);
