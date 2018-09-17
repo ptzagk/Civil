@@ -21,18 +21,16 @@ When voting within the Civil ecosystem, it's important to know what the vote opt
 
 A "passed" vote is one in which the percentage of YES (1) votes is greater than the `voteQuorum` for the poll.
 
-* A vote of YES (1) on a `CHALLENGE` poll means that you "agree with the challenger" that the application/listing should be removed.
-* A vote of NO (0) on a `CHALLENGE` poll means that you "do not agree with the challenger" and believe the application/listing should be whitelisted.
+* A vote of YES (1) on a `CHALLENGE` poll means that you "support the newsroom" and believe the application/listing should be whitelisted.
+* A vote of NO (0) on a `CHALLENGE` poll means that you "agree with the challenger" that the application/listing should be removed.
 * A vote of YES (1) on an `APPEAL CHALLENGE` poll means that you "agree with the appeal challenger" that the granted appeal should be overturned.
 * A vote of NO (0) on an `APPEAL CHALLENGE` poll means that you "agree with the appellate" and that their decision should stand.
 
 ## Parameters
 
-The parameters used by various aspects of the CivilTCR (e.g. the length of an application) are controlled by the `Parameterizer` contract, based on [Mike Goldin's / AdChain's original implementation](https://github.com/skmgoldin/tcr) with 2 very minor modifications:
+The parameters used by various aspects of the CivilTCR (e.g. the length of an application) are controlled by the `Parameterizer` contract, based on [Mike Goldin's / AdChain's original implementation](https://github.com/skmgoldin/tcr) with 1 very minor modification:
 
 * Initializing a few additional parameters in the constructor to support the appeal challenge process.
-* Using an array of values to initialize parameters in constructor, rather than individual constructor parameters, because the additional parameters we added were putting us over the limit for a transaction (when added as individual constructor parameters) and the contract couldn't be initialized.
-* The `PROCESS_BY` constant has been turned into parameter `pProcessBy`
 
 ## Government
 
