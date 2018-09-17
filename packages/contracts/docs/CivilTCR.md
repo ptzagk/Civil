@@ -36,10 +36,14 @@ The parameters used by various aspects of the CivilTCR (e.g. the length of an ap
 
 ## Government
 
-The `Government` contracts (which implements `IGovernment`) controls various parameters related to the appeals process, as well as the Appellate entity address. `CivilTCR` maintains an instance of `IGovernment` originally set in the constructor, which can be updated by the "Government Controller".
+The `Government` contracts (which implements `IGovernment`) controls various parameters related to the appeals process (``), as well as the Appellate entity address. `CivilTCR` maintains an instance of `IGovernment` originally set in the constructor, which can be updated by the "Government Controller".
 
 This contract also maintains a reference to the hash of the current "Constitution", the document that is intended to guide participants in the system.
 
-The "Government Controller" entity is tasked with developing a new contract that implements `IGovernment` in a way that allows the Appellate entity and Constitution amendments to be voted on by the community. This future implementation will use the same PLCRVoting instance as the CivilTCR for votes, so that users do not need to move their tokens to a new contract.
+The `appellate` entity (and only them) is able to propose new values for the parameters it controls (via the `proposeReparameterization` function), as well as new values for the constitution URI and hash (via the `proposeNewConstitution` function). When new values are proposed, a PLCRVoting poll is immediately started in which all token holders vote to confirm or deny the proposed value. In order for values to be updated, they must be supported by an `appealVotePercentage` of token-votes. Once the poll has ended, the proposals (whether a `GovtParamProposal` or a `NewConstProposal`) can be updated by calling (`processProposal` or `processConstChangeProp` respectively).
+
+Similar to in the Parameterizer, there cannot be 2 identical parameter proposals active at a given time. Furthermore, only 1 constitution change proposal is allowed to be active at a time.
+
+The `governmentController` entity is able to unilaterally set the `appellate` entity.
 
 ![tcr diagram](CivilRegistry.png)
