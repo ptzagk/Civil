@@ -36,11 +36,13 @@ The parameters used by various aspects of the CivilTCR (e.g. the length of an ap
 
 ## Government
 
-The `Government` contracts (which implements `IGovernment`) controls various parameters related to the appeals process (``), as well as the Appellate entity address. `CivilTCR` maintains an instance of `IGovernment` originally set in the constructor, which can be updated by the "Government Controller".
+The `Government` contracts (which implements `IGovernment`) controls various parameters related to the appeals process (`requestAppealLen, judgeAppealLen, appealFeemappealVotePercentage`), and parameters internal to the government vote logic (`govtPCommitStageLen, govtPRevealStageLen`), as well as the `appellate` entity address and `governmentController` entity address. `CivilTCR` maintains an instance of `IGovernment` originally set in the constructor, which can be updated by the `governmentController`.
+
+The intention is that once a more fully developed Government contract is ready, the government controller will transfer the government to the new version, which will have no government controller, meaning that it could not be transfered again.
 
 This contract also maintains a reference to the hash of the current "Constitution", the document that is intended to guide participants in the system.
 
-The `appellate` entity (and only them) is able to propose new values for the parameters it controls (via the `proposeReparameterization` function), as well as new values for the constitution URI and hash (via the `proposeNewConstitution` function). When new values are proposed, a PLCRVoting poll is immediately started in which all token holders vote to confirm or deny the proposed value. In order for values to be updated, they must be supported by an `appealVotePercentage` of token-votes. Once the poll has ended, the proposals (whether a `GovtParamProposal` or a `NewConstProposal`) can be updated by calling (`processProposal` or `processConstChangeProp` respectively).
+The `appellate` entity (and only them) is able to propose new values for the parameters it controls (via the `proposeReparameterization` function), as well as new values for the constitution URI and hash (via the `proposeNewConstitution` function). When new values are proposed, a PLCRVoting poll is immediately started in which all token holders vote to confirm or deny the proposed value. In order for values to be updated, they must be supported by an `appealVotePercentage` of token-votes. Once the poll has ended, the proposals (whether a `GovtParamProposal` or a `NewConstProposal`) can be updated by calling (`processProposal` or `processConstChangeProp` respectively). If a proposal is not updated within 7 days (`PROCESSBY`) of the poll ending, the proposal is removed without changing any values.
 
 Similar to in the Parameterizer, there cannot be 2 identical parameter proposals active at a given time. Furthermore, only 1 constitution change proposal is allowed to be active at a time.
 
