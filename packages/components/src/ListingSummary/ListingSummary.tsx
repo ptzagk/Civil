@@ -80,7 +80,7 @@ export class ListingSummaryComponent extends React.Component<ListingSummaryCompo
     }
     return (
       <StyledListingSummaryContainer>
-        {this.renderAppealJudgement()}
+        {this.renderChallengeStatus()}
 
         <StyledListingSummaryTop>
           <NewsroomIcon />
@@ -274,30 +274,69 @@ export class ListingSummaryComponent extends React.Component<ListingSummaryCompo
     return;
   };
 
-  private renderAppealJudgement = (): JSX.Element => {
-    const { appeal, didListingChallengeSucceed } = this.props;
-    if (!appeal || !appeal.appealGranted) {
-      return <></>;
-    }
+  private renderChallengeStatus = (): JSX.Element => {
+    const {
+      appeal,
+      didListingChallengeSucceed,
+      canBeWhitelisted,
+      canResolveChallenge,
+      canListingAppealChallengeBeResolved,
+      canListingAppealBeResolved,
+    } = this.props;
 
     let decisionText;
 
     // Challenge succeeded (newsroom rejected) and appeal was granted, so newsroom is accepted
-    if (didListingChallengeSucceed) {
-      decisionText = (
-        <>
-          <HollowGreenCheck /> Appeal granted to accept Newsroom
-        </>
-      );
-      // Challenge failed (newsroom accepted) and appeal was granted, so newsroom is rejected
-    } else {
-      decisionText = (
-        <>
-          <HollowRedNoGood /> Appeal granted to reject Newsroom
-        </>
-      );
+    if (appeal && !appeal.appealGranted) {
+      if (didListingChallengeSucceed) {
+        decisionText = (
+          <>
+            <HollowGreenCheck /> Appeal granted. Newsroom will be accepted
+          </>
+        );
+        // Challenge failed (newsroom accepted) and appeal was granted, so newsroom is rejected
+      } else {
+        decisionText = (
+          <>
+            <HollowRedNoGood /> Appeal granted. Newsroom will be rejected
+          </>
+        );
+      }
+    } else if (canBeWhitelisted || canResolveChallenge) {
+      if (canBeWhitelisted || (canResolveChallenge && !didListingChallengeSucceed)) {
+        decisionText = (
+          <>
+            <HollowGreenCheck /> Newsroom will be accepted
+          </>
+        );
+      } else if (canResolveChallenge && didListingChallengeSucceed) {
+        decisionText = (
+          <>
+            <HollowRedNoGood /> Newsroom will be rejected
+          </>
+        );
+      }
+    } else if (canListingAppealChallengeBeResolved) {
+      if (didListingChallengeSucceed) {
+        // Challenge succeeded (newsroom rejected) and appeal was granted, then appeal challenge failed, so newsroom is accepted
+        decisionText = (
+          <>
+            <HollowGreenCheck /> Appeal Challenge suceeded. Newsroom will be accepted
+          </>
+        );
+        // Challenge failed (newsroom accepted) and appeal was granted, then appeal challenge succeeded, so newsroom is rejected
+      } else {
+        decisionText = (
+          <>
+            <HollowRedNoGood /> Appeal Challenge failed. Newsroom will be rejected
+          </>
+        );
+      }
     }
 
+    if (!decisionText) {
+      return <></>;
+    }
     return <StyledAppealJudgementContainer>{decisionText}</StyledAppealJudgementContainer>;
   };
 }
