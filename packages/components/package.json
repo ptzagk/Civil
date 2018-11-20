@@ -35,9 +35,13 @@
     "test": "NODE_ENV=test jest"
   },
   "devDependencies": {
+    "@babel/core": "^7.1.6",
     "@joincivil/typescript-types": "^1.2.3",
+    "@storybook/addon-actions": "^4.0.7",
     "@storybook/addon-storyshots": "^3.3.14",
-    "@storybook/react": "^3.3.14",
+    "@storybook/addon-viewport": "^4.0.7",
+    "@storybook/addons": "^4.0.7",
+    "@storybook/react": "^4.0.7",
     "@types/enzyme": "^3.1.9",
     "@types/jest": "^23.3.5",
     "@types/prop-types": "^15.5.2",
@@ -45,7 +49,7 @@
     "@types/react-dom": "^16.0.4",
     "@types/react-test-renderer": "^16.0.1",
     "@types/storybook__react": "^3.0.7",
-    "awesome-typescript-loader": "^3.5.0",
+    "awesome-typescript-loader": "^5.2.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^8.0.4",
     "core-js": "^2.5.3",

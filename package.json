@@ -36,5 +36,8 @@
     "ncp": "^2.0.0",
     "npm-run-all": "^4.1.2",
     "prettier": "1.12.1"
+  },
+  "dependencies": {
+    "babel-loader": "7"
   }
 }
