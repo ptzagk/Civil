@@ -3,7 +3,7 @@
 import { approveEverything, config, inTesting } from "./utils";
 import { MAIN_NETWORK } from "./utils/consts";
 
-const Token = artifacts.require("EIP20");
+const Token = artifacts.require("CVLToken");
 const DLL = artifacts.require("DLL");
 const AttributeStore = artifacts.require("AttributeStore");
 
@@ -36,6 +36,11 @@ module.exports = (deployer: any, network: string, accounts: string[]) => {
       Government.address,
       UserGroups.address,
     );
+
+    const token = await Token.deployed();
+    console.log(`adding CivilTCR(${PLCRVoting.address}) to TokenWhitelist`);
+    await token.addToBothSendAndReceiveAllowed(CivilTCR.address);
+
     if (inTesting(network)) {
       await approveEverything(accounts, Token.at(tokenAddress), CivilTCR.address);
     }

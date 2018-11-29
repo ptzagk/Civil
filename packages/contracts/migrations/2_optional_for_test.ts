@@ -4,7 +4,8 @@ import BN from "bignumber.js";
 import { config } from "./utils";
 import { MAIN_NETWORK, RINKEBY } from "./utils/consts";
 
-const Token = artifacts.require("EIP20");
+const MessagesAndCodes = artifacts.require("MessagesAndCodes");
+const Token = artifacts.require("CVLToken");
 
 const BASE_10 = 10;
 
@@ -18,11 +19,12 @@ module.exports = (deployer: any, network: string, accounts: string[]) => {
   const decimals = "18";
 
   async function giveTokensTo(addresses: string[], originalCount: number): Promise<boolean> {
-    const token = await Token.deployed();
     const user = addresses[0];
     let allocation;
     allocation = 50000000000000000000000;
     console.log("give " + allocation + " tokens to: " + user);
+    const token = await Token.deployed();
+    await token.addToBothSendAndReceiveAllowed(user);
     await token.transfer(user, allocation);
     if (network === "ganache" && !accounts.includes(user)) {
       web3.eth.sendTransaction({ from: accounts[0], to: user, value: web3.toWei(1, "ether") });
@@ -33,6 +35,9 @@ module.exports = (deployer: any, network: string, accounts: string[]) => {
     }
     return giveTokensTo(addresses.slice(1), originalCount);
   }
+  deployer.deploy(MessagesAndCodes);
+  deployer.link(MessagesAndCodes, Token);
+
   deployer.then(async () => {
     if (network === RINKEBY) {
       await deployer.deploy(Token, totalSupply, "TestCvl", decimals, "TESTCVL");

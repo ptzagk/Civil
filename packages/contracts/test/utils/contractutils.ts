@@ -13,7 +13,7 @@ import ethApi from "./getethapi";
 // We would need to update ALL the tests, this is a workaround
 export { advanceEvmTime } from "@joincivil/dev-utils";
 
-const Token = artifacts.require("tokens/eip20/EIP20");
+const Token = artifacts.require("CVLToken");
 
 const PLCRVoting = artifacts.require("CivilPLCRVoting");
 const CivilParameterizer = artifacts.require("CivilParameterizer");
