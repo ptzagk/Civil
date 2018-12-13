@@ -5,6 +5,7 @@ import { config } from "./utils";
 import { MAIN_NETWORK, RINKEBY } from "./utils/consts";
 
 const MessagesAndCodes = artifacts.require("MessagesAndCodes");
+const ManagedWhitelistTokenController = artifacts.require("ManagedWhitelistTokenController");
 const Token = artifacts.require("CVLToken");
 
 const BASE_10 = 10;
@@ -36,17 +37,19 @@ module.exports = (deployer: any, network: string, accounts: string[]) => {
     return giveTokensTo(addresses.slice(1), originalCount);
   }
   deployer.deploy(MessagesAndCodes);
-  deployer.link(MessagesAndCodes, Token);
+  deployer.link(MessagesAndCodes, ManagedWhitelistTokenController);
 
   deployer.then(async () => {
     if (network === RINKEBY) {
-      await deployer.deploy(Token, totalSupply, "TestCvl", decimals, "TESTCVL");
+      const controller = await deployer.deploy(ManagedWhitelistTokenController);
+      await deployer.deploy(Token, totalSupply, "TestCvl", decimals, "TESTCVL", controller);
       const allAccounts = teammatesSplit.concat(config.nets[network].tokenHolders);
       if (teammatesSplit) {
         return giveTokensTo(allAccounts, allAccounts.length);
       }
     } else if (network !== MAIN_NETWORK) {
-      await deployer.deploy(Token, totalSupply, "TestCvl", decimals, "TESTCVL");
+      const controller = await deployer.deploy(ManagedWhitelistTokenController);
+      await deployer.deploy(Token, totalSupply, "TestCvl", decimals, "TESTCVL", controller);
       const allAccounts = accounts.concat(config.nets[network].tokenHolders);
       return giveTokensTo(allAccounts, allAccounts.length);
     }
