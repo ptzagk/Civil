@@ -24,8 +24,9 @@ module.exports = (deployer: any, network: string, accounts: string[]) => {
     let allocation;
     allocation = 50000000000000000000000;
     console.log("give " + allocation + " tokens to: " + user);
+    const controller = await ManagedWhitelistTokenController.deployed();
     const token = await Token.deployed();
-    await token.addToBothSendAndReceiveAllowed(user);
+    await controller.addToBothSendAndReceiveAllowed(user);
     await token.transfer(user, allocation);
     if (network === "ganache" && !accounts.includes(user)) {
       web3.eth.sendTransaction({ from: accounts[0], to: user, value: web3.toWei(1, "ether") });
@@ -42,14 +43,14 @@ module.exports = (deployer: any, network: string, accounts: string[]) => {
   deployer.then(async () => {
     if (network === RINKEBY) {
       const controller = await deployer.deploy(ManagedWhitelistTokenController);
-      await deployer.deploy(Token, totalSupply, "TestCvl", decimals, "TESTCVL", controller);
+      await deployer.deploy(Token, totalSupply, "TestCvl", decimals, "TESTCVL", controller.address);
       const allAccounts = teammatesSplit.concat(config.nets[network].tokenHolders);
       if (teammatesSplit) {
         return giveTokensTo(allAccounts, allAccounts.length);
       }
     } else if (network !== MAIN_NETWORK) {
       const controller = await deployer.deploy(ManagedWhitelistTokenController);
-      await deployer.deploy(Token, totalSupply, "TestCvl", decimals, "TESTCVL", controller);
+      await deployer.deploy(Token, totalSupply, "TestCvl", decimals, "TESTCVL", controller.address);
       const allAccounts = accounts.concat(config.nets[network].tokenHolders);
       return giveTokensTo(allAccounts, allAccounts.length);
     }

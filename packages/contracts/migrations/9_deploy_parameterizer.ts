@@ -4,6 +4,7 @@ import { approveEverything, config, inTesting } from "./utils";
 import { MAIN_NETWORK } from "./utils/consts";
 
 const Token = artifacts.require("CVLToken");
+const ManagedWhitelistTokenController = artifacts.require("ManagedWhitelistTokenController");
 const DLL = artifacts.require("DLL");
 const AttributeStore = artifacts.require("AttributeStore");
 
@@ -43,9 +44,9 @@ module.exports = (deployer: any, network: string, accounts: string[]) => {
       parameterizerConfig.appealChallengeRevealStageLength,
     ]);
 
-    const token = await Token.deployed();
+    const controller = await ManagedWhitelistTokenController.deployed();
     console.log(`adding Parameterizer(${Parameterizer.address}) to TokenWhitelist`);
-    await token.addToBothSendAndReceiveAllowed(Parameterizer.address);
+    await controller.addToBothSendAndReceiveAllowed(Parameterizer.address);
 
     if (inTesting(network)) {
       await approveEverything(accounts, Token.at(tokenAddress), Parameterizer.address);

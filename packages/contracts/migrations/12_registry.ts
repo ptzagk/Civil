@@ -4,6 +4,7 @@ import { approveEverything, config, inTesting } from "./utils";
 import { MAIN_NETWORK } from "./utils/consts";
 
 const Token = artifacts.require("CVLToken");
+const ManagedWhitelistTokenController = artifacts.require("ManagedWhitelistTokenController");
 const DLL = artifacts.require("DLL");
 const AttributeStore = artifacts.require("AttributeStore");
 
@@ -37,9 +38,9 @@ module.exports = (deployer: any, network: string, accounts: string[]) => {
       UserGroups.address,
     );
 
-    const token = await Token.deployed();
+    const controller = await ManagedWhitelistTokenController.deployed();
     console.log(`adding CivilTCR(${PLCRVoting.address}) to TokenWhitelist`);
-    await token.addToBothSendAndReceiveAllowed(CivilTCR.address);
+    await controller.addToBothSendAndReceiveAllowed(CivilTCR.address);
 
     if (inTesting(network)) {
       await approveEverything(accounts, Token.at(tokenAddress), CivilTCR.address);

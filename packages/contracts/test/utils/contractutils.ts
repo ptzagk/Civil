@@ -251,8 +251,8 @@ async function giveTokensTo(
 }
 
 async function createAndDistributeToken(totalSupply: BigNumber, decimals: string, addresses: string[]): Promise<any> {
-  const controller = await ManagedWhitelistTokenController.New();
-  const token = await Token.new(totalSupply, "TestCoin", decimals, "TEST", controller);
+  const controller = await ManagedWhitelistTokenController.new();
+  const token = await Token.new(totalSupply, "TestCoin", decimals, "TEST", controller.address);
   await giveTokensTo(totalSupply, addresses, addresses, token);
   return token;
 }

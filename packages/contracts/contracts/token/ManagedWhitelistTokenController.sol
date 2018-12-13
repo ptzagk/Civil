@@ -13,11 +13,10 @@ contract ManagedWhitelistTokenController is ManagedWhitelist {
     string public constant SEND_NOT_ALLOWED_ERROR = "ILLEGAL_TRANSFER_SENDING_ACCOUNT_NOT_WHITELISTED";
     string public constant RECEIVE_NOT_ALLOWED_ERROR = "ILLEGAL_TRANSFER_RECEIVING_ACCOUNT_NOT_WHITELISTED";
 
-    
     constructor () public {
+        messagesAndCodes.addMessage(SUCCESS_CODE, SUCCESS_MESSAGE);
         SEND_NOT_ALLOWED_CODE = messagesAndCodes.autoAddMessage(SEND_NOT_ALLOWED_ERROR);
         RECEIVE_NOT_ALLOWED_CODE = messagesAndCodes.autoAddMessage(RECEIVE_NOT_ALLOWED_ERROR);
-        messagesAndCodes.addMessage(SUCCESS_CODE, SUCCESS_MESSAGE);
     }
 
     function notRestricted(address from, address to, uint value) public view returns (bool) {

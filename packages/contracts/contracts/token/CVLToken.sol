@@ -8,7 +8,7 @@ import "../zeppelin-solidity/token/ERC20/ERC20Detailed.sol";
 /// @dev Inherit from this contract to implement your own ERC-1404 token
 contract CVLToken is ERC20, ERC20Detailed, Ownable {
 
-    ManagedWhitelistTokenController controller;
+    ManagedWhitelistTokenController public controller;
 
     constructor (uint256 _initialAmount,
         string _tokenName,
