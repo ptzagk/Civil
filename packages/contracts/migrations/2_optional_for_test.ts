@@ -5,7 +5,7 @@ import { config } from "./utils";
 import { MAIN_NETWORK, RINKEBY } from "./utils/consts";
 
 const MessagesAndCodes = artifacts.require("MessagesAndCodes");
-const ManagedWhitelistTokenController = artifacts.require("ManagedWhitelistTokenController");
+const CivilTokenController = artifacts.require("CivilTokenController");
 const Token = artifacts.require("CVLToken");
 
 const BASE_10 = 10;
@@ -24,7 +24,7 @@ module.exports = (deployer: any, network: string, accounts: string[]) => {
     let allocation;
     allocation = 50000000000000000000000;
     console.log("give " + allocation + " tokens to: " + user);
-    const controller = await ManagedWhitelistTokenController.deployed();
+    const controller = await CivilTokenController.deployed();
     const token = await Token.deployed();
     await controller.addToBothSendAndReceiveAllowed(user);
     await token.transfer(user, allocation);
@@ -38,18 +38,18 @@ module.exports = (deployer: any, network: string, accounts: string[]) => {
     return giveTokensTo(addresses.slice(1), originalCount);
   }
   deployer.deploy(MessagesAndCodes);
-  deployer.link(MessagesAndCodes, ManagedWhitelistTokenController);
+  deployer.link(MessagesAndCodes, CivilTokenController);
 
   deployer.then(async () => {
     if (network === RINKEBY) {
-      const controller = await deployer.deploy(ManagedWhitelistTokenController);
+      const controller = await deployer.deploy(CivilTokenController);
       await deployer.deploy(Token, totalSupply, "TestCvl", decimals, "TESTCVL", controller.address);
       const allAccounts = teammatesSplit.concat(config.nets[network].tokenHolders);
       if (teammatesSplit) {
         return giveTokensTo(allAccounts, allAccounts.length);
       }
     } else if (network !== MAIN_NETWORK) {
-      const controller = await deployer.deploy(ManagedWhitelistTokenController);
+      const controller = await deployer.deploy(CivilTokenController);
       await deployer.deploy(Token, totalSupply, "TestCvl", decimals, "TESTCVL", controller.address);
       const allAccounts = accounts.concat(config.nets[network].tokenHolders);
       return giveTokensTo(allAccounts, allAccounts.length);

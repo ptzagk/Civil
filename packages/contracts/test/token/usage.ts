@@ -5,14 +5,14 @@ import { configureProviders, setUpUserGroups } from "../utils/contractutils";
 configureChai(chai);
 const expect = chai.expect;
 
-const ManagedWhitelistTokenController = artifacts.require("ManagedWhitelistTokenController");
+const CivilTokenController = artifacts.require("CivilTokenController");
 const Token = artifacts.require("CVLToken");
 
 contract("CVLToken", accounts => {
   let controller: any;
   let token: any;
   beforeEach(async () => {
-    controller = await ManagedWhitelistTokenController.new();
+    controller = await CivilTokenController.new();
     token = await Token.new(1000, "TestCoin", 18, "TEST", controller.address);
   });
 

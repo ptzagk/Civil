@@ -1,5 +1,5 @@
 pragma solidity ^0.4.24;
-import "./ManagedWhitelistTokenController.sol";
+import "./CivilTokenController.sol";
 import "../zeppelin-solidity/ownership/Ownable.sol";
 import "../zeppelin-solidity/token/ERC20/ERC20.sol";
 import "../zeppelin-solidity/token/ERC20/ERC20Detailed.sol";
@@ -8,13 +8,13 @@ import "../zeppelin-solidity/token/ERC20/ERC20Detailed.sol";
 /// @dev Inherit from this contract to implement your own ERC-1404 token
 contract CVLToken is ERC20, ERC20Detailed, Ownable {
 
-    ManagedWhitelistTokenController public controller;
+    CivilTokenController public controller;
 
     constructor (uint256 _initialAmount,
         string _tokenName,
         uint8 _decimalUnits,
         string _tokenSymbol,
-        ManagedWhitelistTokenController _controller 
+        CivilTokenController _controller 
         ) public ERC20Detailed(_tokenName, _tokenSymbol, _decimalUnits) {
         require(address(_controller) != address(0), "controller not provided");
         controller = _controller;
@@ -26,7 +26,7 @@ contract CVLToken is ERC20, ERC20Detailed, Ownable {
         _;
     }
 
-    function changeController(ManagedWhitelistTokenController _controller) public  {
+    function changeController(CivilTokenController _controller) public  {
         require(address(_controller) != address(0), "controller not provided");
         controller = _controller;
     }

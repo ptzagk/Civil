@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 import "./ManagedWhitelist.sol";
 import "./ERC1404/MessagesAndCodes.sol";
 
-contract ManagedWhitelistTokenController is ManagedWhitelist {
+contract CivilTokenController is ManagedWhitelist {
     using MessagesAndCodes for MessagesAndCodes.Data;
     MessagesAndCodes.Data internal messagesAndCodes;
     bool public WHITELIST_ENABLED;
