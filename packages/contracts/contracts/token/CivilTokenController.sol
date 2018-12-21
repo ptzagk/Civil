@@ -1,50 +1,68 @@
 pragma solidity ^0.4.24;
 import "./ManagedWhitelist.sol";
+import "./ERC1404/ERC1404.sol";
 import "./ERC1404/MessagesAndCodes.sol";
 
-contract CivilTokenController is ManagedWhitelist {
+contract CivilTokenController is ManagedWhitelist, ERC1404 {
     using MessagesAndCodes for MessagesAndCodes.Data;
     MessagesAndCodes.Data internal messagesAndCodes;
-    bool public WHITELIST_ENABLED;
-    uint8 public SEND_NOT_ALLOWED_CODE;
-    uint8 public RECEIVE_NOT_ALLOWED_CODE;
+
     uint8 public constant SUCCESS_CODE = 0;
     string public constant SUCCESS_MESSAGE = "SUCCESS";
-    string public constant SEND_NOT_ALLOWED_ERROR = "ILLEGAL_TRANSFER_SENDING_ACCOUNT_NOT_WHITELISTED";
-    string public constant RECEIVE_NOT_ALLOWED_ERROR = "ILLEGAL_TRANSFER_RECEIVING_ACCOUNT_NOT_WHITELISTED";
+
+    uint8 public MUST_BE_A_CIVILIAN_CODE;
+    string public constant MUST_BE_A_CIVILIAN_ERROR = "MUST_BE_A_CIVILIAN";
+
+    uint8 public MUST_BE_UNLOCKED_CODE;
+    string public constant MUST_BE_UNLOCKED_ERROR = "MUST_BE_UNLOCKED";
+
+    uint8 public MUST_BE_VERIFIED_CODE;
+    string public constant MUST_BE_VERIFIED_ERROR = "MUST_BE_VERIFIED";
 
     constructor () public {
         messagesAndCodes.addMessage(SUCCESS_CODE, SUCCESS_MESSAGE);
-        SEND_NOT_ALLOWED_CODE = messagesAndCodes.autoAddMessage(SEND_NOT_ALLOWED_ERROR);
-        RECEIVE_NOT_ALLOWED_CODE = messagesAndCodes.autoAddMessage(RECEIVE_NOT_ALLOWED_ERROR);
-    }
-
-    function notRestricted(address from, address to, uint value) public view returns (bool) {
-        return detectTransferRestriction(from, to, value) == SUCCESS_CODE;
-    }
-
-    function enableWhitelist() public onlyOwner {
-        WHITELIST_ENABLED = true;
-    }
-
-    function disableWhitelist() public onlyOwner {
-        WHITELIST_ENABLED = false;
+        MUST_BE_A_CIVILIAN_CODE = messagesAndCodes.autoAddMessage(MUST_BE_A_CIVILIAN_ERROR);
+        MUST_BE_UNLOCKED_CODE = messagesAndCodes.autoAddMessage(MUST_BE_UNLOCKED_ERROR);
+        MUST_BE_VERIFIED_CODE = messagesAndCodes.autoAddMessage(MUST_BE_VERIFIED_ERROR);
     }
 
     function detectTransferRestriction (address from, address to, uint value)
         public
         view
-        returns (uint8 restrictionCode)
+        returns (uint8)
     {
-        if(!WHITELIST_ENABLED) {
-            restrictionCode = SUCCESS_CODE; // don't check the whitelist if restrictions are disabled
+        // allow if FROM core or users that have proved use
+        if(coreList[from] || unlockedList[from]){
+            return SUCCESS_CODE;
         }
-        else if (!sendAllowed[from]) {
-            restrictionCode = SEND_NOT_ALLOWED_CODE; // sender address not whitelisted
-        } else if (!receiveAllowed[to]) {
-            restrictionCode = RECEIVE_NOT_ALLOWED_CODE; // receiver address not whitelisted
-        } else {
-            restrictionCode = SUCCESS_CODE; // successful transfer (required)
+        // FROM is a storefront wallet
+        else if(storefrontList[from]){
+            // allow if this is going to a verified user or a core address
+            if(verifiedList[to] || coreList[to]){
+                return SUCCESS_CODE;
+            }
+            // Storefront cannot transfer to wallets that have not been KYCed
+            else {
+                return MUST_BE_VERIFIED_CODE;
+            }
+        }
+        // reject if FROM is not a civilian
+        else if(civilianList[from] == false){
+            return MUST_BE_A_CIVILIAN_CODE;
+        }
+        // FROM is a civilian
+        else if(civilianList[from]){
+            // FROM is sending TO a core address
+            if(coreList[to]){
+                return SUCCESS_CODE;
+            }
+            // 
+            else {
+                return MUST_BE_UNLOCKED_CODE;
+            }
+        }
+        else {
+            return 100;
         }
     }
 

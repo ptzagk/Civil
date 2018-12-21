@@ -13,8 +13,7 @@ import ethApi from "./getethapi";
 // We would need to update ALL the tests, this is a workaround
 export { advanceEvmTime } from "@joincivil/dev-utils";
 
-const MessagesAndCodes = artifacts.require("MessagesAndCodes");
-const CivilTokenController = artifacts.require("CivilTokenController");
+const NoOpTokenController = artifacts.require("NoOpTokenController");
 const Token = artifacts.require("CVLToken");
 
 const PLCRVoting = artifacts.require("CivilPLCRVoting");
@@ -251,7 +250,7 @@ async function giveTokensTo(
 }
 
 async function createAndDistributeToken(totalSupply: BigNumber, decimals: string, addresses: string[]): Promise<any> {
-  const controller = await CivilTokenController.new();
+  const controller = await NoOpTokenController.new();
   const token = await Token.new(totalSupply, "TestCoin", decimals, "TEST", controller.address);
   await giveTokensTo(totalSupply, addresses, addresses, token);
   return token;
